@@ -4,12 +4,11 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        int tracks = Integer.parseInt(args[0]);
-//        System.out.println("Number of tracks "+tracks);
+//        int tracks = Integer.parseInt(args[0]);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-
+                Window w = new Window(3);
             }
         });
     }
