@@ -8,7 +8,7 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Window w = new Window(3);
+                MainWindow w = new MainWindow(5);
             }
         });
     }
