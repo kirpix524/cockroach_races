@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
 public class RaceField extends JPanel {
     public static final float DEFAULT_SEPARATOR_WIDTH = 1.0f;
@@ -169,14 +170,26 @@ public class RaceField extends JPanel {
         }
     }
 
+    private void prepareBuffer(BufferedImage bi, Graphics gbi, Graphics g) {
+        gbi.setColor(this.getBackground());
+        gbi.fillRect(0,0,getWidth(), getHeight());
+        gbi.setColor(g.getColor());
+        gbi.setFont(g.getFont());
+    }
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        drawField(g);
+        //
+        BufferedImage bi = new BufferedImage(getWidth(), getHeight(),BufferedImage.TYPE_INT_RGB);
+        Graphics gbi = bi.getGraphics();
+        prepareBuffer(bi, gbi, g);
+        //
+        drawField(gbi);
         Cockroach[] cockroaches = mainWindow.getCockroaches();
         for (int i = 0; i < cockroaches.length; i++) {
-            cockroaches[i].draw(g);
+            cockroaches[i].draw(gbi);
         }
+        g.drawImage(bi,0,0,null);
     }
 
     private static int getFinishWidth(){
