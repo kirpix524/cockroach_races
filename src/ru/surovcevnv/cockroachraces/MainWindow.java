@@ -179,4 +179,8 @@ public class MainWindow extends JFrame implements ActionListener {
             }
         }
     }
+
+    public int getFinishX() {
+        return RaceField.getFinishX();
+    }
 }

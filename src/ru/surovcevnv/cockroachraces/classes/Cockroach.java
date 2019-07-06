@@ -4,15 +4,15 @@ import java.awt.*;
 
 public class Cockroach implements Runnable{
     public static final String COCKROACH_THREAD_NAME_PREFIX = "CockroachThread";
-    private final double MAX_SLEEP_TIME = 700;
-    private final int MIN_SLEEP_TIME = 300;
+    private final double MAX_SLEEP_TIME = 300;
+    private final int MIN_SLEEP_TIME = 100;
     private final int MAX_MOVE = 10;
     public static final int DEFAULT_WIDTH = 70;
     public static final int DEFAULT_HEIGHT = 40;
     private final float DEFAULT_PAW_WIDTH = 3.0f;
     private final boolean DEFAULT_STEP_LEFT = false;
     private final int NUMBER_OF_PAW_PAIRS = 4;
-    private final int MIN_STEP_CHANGE_TIME = 130;
+    private final int MIN_STEP_CHANGE_TIME = 150;
     private final String DEFAULT_NAME_PREFIX = "Таракан ";
     //
     private int id;
@@ -167,6 +167,10 @@ public class Cockroach implements Runnable{
 
     public String getName(){
         return name;
+    }
+
+    public String getInfo() {
+        return getName();
     }
 
     public void setName(String name) {
