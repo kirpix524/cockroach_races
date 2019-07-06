@@ -1,5 +1,6 @@
 package ru.surovcevnv.cockroachraces;
 
+import ru.surovcevnv.cockroachraces.classes.Cockroach;
 import ru.surovcevnv.cockroachraces.classes.RaceField;
 
 import javax.swing.*;
@@ -10,15 +11,14 @@ public class MainWindow extends JFrame {
     public static final int DEFAULT_VGAP_SIDE_PANEL = 100;
     public static final int DEFAULT_HGAP_SIDE_PANEL = 10;
     public static final int DEFAULT_COLS_SIDE_PANEL = 2;
-    private final String COCKROACH_ID_PREFIX = "cockroach";
     private final int numberOfTracks;
     //region constants
     //
     private final Dimension PREFERRED_SIZE_BOTTOM_MENU = new Dimension(1, 60);
     private final String DEFAULT_CAPTION = "Тараканьи бега";
-    private final int DEFAULT_X = 100;
+    private final int DEFAULT_X = 50;
     private final int DEFAULT_Y = 100;
-    private final int DEFAULT_WIDTH = 1300;
+    private final int DEFAULT_WIDTH = 1200;
     private final int DEFAULT_HEIGHT = 500;
     private final String CAPTION_BUTTON_START_RACE = "Начать";
     private final String CAPTION_BUTTON_EXIT = "Выход";
@@ -26,7 +26,7 @@ public class MainWindow extends JFrame {
     private final String CAPTION_BUTTON_STOP_RACE = "Остановить забег";
     //endregion
 
-    private String[] cockroachID;
+    private Cockroach[] cockroaches;
     private JPanel bottomMenu;
     private JPanel sidePanel;
     private RaceField raceField;
@@ -39,14 +39,14 @@ public class MainWindow extends JFrame {
         setResizable(false);
         setVisible(true);
         //
-        initCockroachID();
+        initCockroaches();
         initMenusAndPanels();
     }
 
-    private void initCockroachID() {
-        cockroachID = new String[numberOfTracks];
+    private void initCockroaches() {
+        cockroaches = new Cockroach[numberOfTracks];
         for (int i=0; i< numberOfTracks; i++) {
-            cockroachID[i]= COCKROACH_ID_PREFIX +i;
+            cockroaches[i]= new Cockroach(i, Cockroach.DEFAULT_WIDTH/2, RaceField.TRACK_START_Y+(RaceField.getFullTrackWidth()/2)+(i*RaceField.getFullTrackWidth()));
         }
     }
     private void initMenusAndPanels() {
@@ -143,5 +143,9 @@ public class MainWindow extends JFrame {
 
     public int getNumberOfTracks() {
         return numberOfTracks;
+    }
+
+    public Cockroach[] getCockroaches() {
+        return cockroaches;
     }
 }
