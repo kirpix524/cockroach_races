@@ -11,6 +11,8 @@ public class RaceField extends JPanel {
     private final float DEFAULT_BORDER_WIDTH = 5.0f;
     private MainWindow mainWindow;
     //
+    private final int STAT_INFO_X = 100;
+    private final int STAT_INFO_Y = 20;
     private final int TRACK_NUM_X = 0;
     private final int COCKROACH_NAME_X = TRACK_NUM_X + 100;
     public static final int TRACK_WIDTH = 80;
@@ -29,6 +31,7 @@ public class RaceField extends JPanel {
     //
     private final Font FONT_TRACK_NUM = new Font("Times New Roman", Font.BOLD, 38);
     private final Font FONT_COCKROACH_NAME = new Font("Times New Roman", Font.PLAIN, 16);
+    private final Font FONT_STAT_INFO = new Font("Times New Roman", Font.PLAIN, 25);
 
     private class EventGenerator extends Thread {
         JPanel me;
@@ -133,7 +136,19 @@ public class RaceField extends JPanel {
         g2d.setFont(oldFont);
     }
 
+    private void drawStatInfo(Graphics g) {
+        String raceInfo = mainWindow.getStatInfo();
+        Graphics2D g2d = (Graphics2D) g;
+        Font oldFont = g2d.getFont();
+        //
+        g2d.setFont(FONT_STAT_INFO);
+        g2d.drawString(raceInfo, STAT_INFO_X, STAT_INFO_Y);
+        //
+        g2d.setFont(oldFont);
+    }
+
     private void drawField(Graphics g) {
+        drawStatInfo(g);
         int numberOfTracks = mainWindow.getNumberOfTracks();
         for (int i = 0; i < numberOfTracks; i++) {
             drawTrack(g,i);

@@ -1,8 +1,10 @@
 package ru.surovcevnv.cockroachraces.classes;
 
+import ru.surovcevnv.cockroachraces.MainWindow;
+
 import java.awt.*;
 
-public class Cockroach implements Runnable{
+public class Cockroach implements Runnable {
     public static final String COCKROACH_THREAD_NAME_PREFIX = "CockroachThread";
     private final double MAX_SLEEP_TIME = 300;
     private final int MIN_SLEEP_TIME = 100;
@@ -16,7 +18,6 @@ public class Cockroach implements Runnable{
     private final String DEFAULT_NAME_PREFIX = "Таракан ";
     //
     private int id;
-    private boolean isRacing;
     private Thread thread;
     //
     private int curX;
@@ -26,19 +27,23 @@ public class Cockroach implements Runnable{
     private float pawWidth;
     private Color color;
     private boolean stepLeft;
-    private long lastStepTime;
+    private long lastStepChangeTime;
     //
     private int startPositionX;
     private int startPositionY;
     private String name;
+    //
+    private long lastMoveTime;
+    //
+    private MainWindow mainWindow;
 
 
-
-    public Cockroach(int id, int curX, int curY) {
-        init(id,curX,curY,DEFAULT_WIDTH, DEFAULT_HEIGHT,DEFAULT_PAW_WIDTH,new Color((int)(255*Math.random()), (int)(255*Math.random()),(int)(255*Math.random())),false, DEFAULT_STEP_LEFT, DEFAULT_NAME_PREFIX+(id+1));
+    public Cockroach(MainWindow mainWindow, int id, int curX, int curY) {
+        init(mainWindow, id, curX, curY, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_PAW_WIDTH, new Color((int) (255 * Math.random()), (int) (255 * Math.random()), (int) (255 * Math.random())), DEFAULT_STEP_LEFT, DEFAULT_NAME_PREFIX + (id + 1));
     }
 
-    private void init(int id, int curX, int curY, int width, int height, float pawWidth, Color color, boolean isRacing, boolean stepLeft, String name) {
+    private void init(MainWindow mainWindow, int id, int curX, int curY, int width, int height, float pawWidth, Color color, boolean stepLeft, String name) {
+        this.mainWindow = mainWindow;
         this.id = id;
         this.curX = curX;
         this.curY = curY;
@@ -46,7 +51,6 @@ public class Cockroach implements Runnable{
         this.height = height;
         this.pawWidth = pawWidth;
         this.color = color;
-        this.isRacing = isRacing;
         this.stepLeft = stepLeft;
         this.name = name;
 
@@ -55,18 +59,21 @@ public class Cockroach implements Runnable{
     }
 
     public void startRace() {
-        isRacing=true;
-        thread = new Thread(this, COCKROACH_THREAD_NAME_PREFIX +id);
+        thread = new Thread(this, COCKROACH_THREAD_NAME_PREFIX + id);
         thread.start();
     }
 
     public void stopRace() {
-        isRacing = false;
         thread.interrupt();
     }
 
     public void returnToStart() {
-        setCoordinates(startPositionX,startPositionY);
+        setCoordinates(startPositionX, startPositionY);
+        setLastMoveTime(System.currentTimeMillis());
+    }
+
+    private void setLastMoveTime(long lastMoveTime) {
+        this.lastMoveTime = lastMoveTime;
     }
 
     @Override
@@ -83,63 +90,68 @@ public class Cockroach implements Runnable{
     }
 
     synchronized private int getSleepTime() {
-        int sleepTime = (int)(Math.random()*MAX_SLEEP_TIME);
-        if (sleepTime<MIN_SLEEP_TIME) sleepTime=MIN_SLEEP_TIME;
+        int sleepTime = (int) (Math.random() * MAX_SLEEP_TIME);
+        if (sleepTime < MIN_SLEEP_TIME) sleepTime = MIN_SLEEP_TIME;
         return sleepTime;
     }
 
-    synchronized private void moveCockroach() {
-        setCoordinates(curX+(int)(Math.random()*MAX_MOVE),curY);
+    synchronized public void moveCockroach() {
+        setCoordinates(curX + (int) (Math.random() * MAX_MOVE), curY);
+        mainWindow.updateRaceNode(id, getTime(), getPosX());
+        if (getLeft() >= mainWindow.getFinishX()) {
+            stopRace();
+            mainWindow.sayFinished(id);
+        }
     }
 
-    synchronized public void setCoordinates(int newX, int newY) {  //todo check bounds
-        curX=newX;
-        curY=newY;
+    synchronized private void setCoordinates(int newX, int newY) {  //todo check bounds
+        curX = newX;
+        curY = newY;
     }
 
-    synchronized public int getTop() {
-        return curY-height/2;
+    synchronized private int getTop() {
+        return curY - height / 2;
     }
 
-    synchronized public int getBottom() {
-        return curY+height/2;
+    synchronized private int getBottom() {
+        return curY + height / 2;
     }
 
-    synchronized public int getLeft() {
-        return curX-width/2;
+    synchronized private int getLeft() {
+        return curX - width / 2;
     }
 
-    synchronized public int getRight() {
-        return curX+width/2;
+    synchronized private int getRight() {
+        return curX + width / 2;
     }
 
     synchronized public boolean isMyCoord(int x, int y) {
-        if ((getTop()>=y)&&(getBottom()<=y)&&(getLeft()<=x)&&(getRight()>=x)) return true;
+        if ((getTop() >= y) && (getBottom() <= y) && (getLeft() <= x) && (getRight() >= x)) return true;
         return false;
     }
 
     private void changeStep() {
-        if (lastStepTime>0) {
-            if ((System.currentTimeMillis()-lastStepTime)>MIN_STEP_CHANGE_TIME) {
+        if (lastStepChangeTime > 0) {
+            if ((System.currentTimeMillis() - lastStepChangeTime) > MIN_STEP_CHANGE_TIME) {
                 if (stepLeft) {
-                    stepLeft=false;
+                    stepLeft = false;
                 } else {
-                    stepLeft=true;
+                    stepLeft = true;
                 }
-                lastStepTime=System.currentTimeMillis();
+                lastStepChangeTime = System.currentTimeMillis();
             }
         } else {
-            lastStepTime = System.currentTimeMillis();
+            lastStepChangeTime = System.currentTimeMillis();
         }
 
     }
 
     private int getPawInterval() {
-        return width/(NUMBER_OF_PAW_PAIRS+1);
+        return width / (NUMBER_OF_PAW_PAIRS + 1);
     }
 
     private int getDiffXPaw() {
-        return getPawInterval()/2;
+        return getPawInterval() / 2;
     }
 
     public void draw(Graphics g) {
@@ -150,13 +162,13 @@ public class Cockroach implements Runnable{
         g2d.setColor(color);
         g2d.setStroke(new BasicStroke(pawWidth));
 
-        g2d.fillOval(getLeft(), getTop()+(height/4), width,height/2);
+        g2d.fillOval(getLeft(), getTop() + (height / 4), width, height / 2);
 
-        for (int i=0; i<NUMBER_OF_PAW_PAIRS; i++) {
+        for (int i = 0; i < NUMBER_OF_PAW_PAIRS; i++) {
             if (stepLeft) {
-                g2d.drawLine(getLeft()+(getPawInterval()*(i+1))-getDiffXPaw(), getBottom(), getLeft()+(getPawInterval()*(i+1))+getDiffXPaw(), getTop());
+                g2d.drawLine(getLeft() + (getPawInterval() * (i + 1)) - getDiffXPaw(), getBottom(), getLeft() + (getPawInterval() * (i + 1)) + getDiffXPaw(), getTop());
             } else {
-                g2d.drawLine(getLeft()+(getPawInterval()*(i+1))+getDiffXPaw(), getBottom(), getLeft()+(getPawInterval()*(i+1))-getDiffXPaw(), getTop());
+                g2d.drawLine(getLeft() + (getPawInterval() * (i + 1)) + getDiffXPaw(), getBottom(), getLeft() + (getPawInterval() * (i + 1)) - getDiffXPaw(), getTop());
             }
         }
         changeStep();
@@ -165,15 +177,27 @@ public class Cockroach implements Runnable{
         g2d.setStroke(oldStroke);
     }
 
-    public String getName(){
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
         return name;
     }
 
     public String getInfo() {
-        return getName();
+        return getName()+" до финиша осталось "+(mainWindow.getFinishX()-getPosX());
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public int getID() {
+        return id;
+    }
+
+    public long getTime() {
+        return lastMoveTime;
+    }
+
+    public int getPosX() {
+        return getLeft();
     }
 }
