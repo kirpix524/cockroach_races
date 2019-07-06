@@ -110,4 +110,8 @@ public class Race {
         finished = true;
     }
 
+    public int getNum() {
+        return (id+1);
+    }
+
 }

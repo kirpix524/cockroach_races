@@ -1,9 +1,7 @@
 package ru.surovcevnv.cockroachraces;
 
-import ru.surovcevnv.cockroachraces.classes.Cockroach;
-import ru.surovcevnv.cockroachraces.classes.Race;
-import ru.surovcevnv.cockroachraces.classes.RaceField;
-import ru.surovcevnv.cockroachraces.classes.RaceNode;
+import ru.surovcevnv.cockroachraces.classes.*;
+import ru.surovcevnv.cockroachraces.interfaces.RaceResultsInformer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,7 +37,7 @@ public class MainWindow extends JFrame implements ActionListener {
     private RaceField raceField;
     //
     private ArrayList<Race> raceJournal;
-
+    private RaceResultsInformer resultsInformer;
     //
     public MainWindow(int numberOfTracks) {
         this.numberOfTracks = numberOfTracks;
@@ -53,6 +51,7 @@ public class MainWindow extends JFrame implements ActionListener {
         initMenusAndPanels();
         initRaceJournal();
         //
+        resultsInformer = new ConsoleResultInformer();
     }
 
     private void initRaceJournal() {
@@ -174,7 +173,9 @@ public class MainWindow extends JFrame implements ActionListener {
 
     private void stopRace() {
         if (raceJournal.size() > 0) {
-            raceJournal.get(raceJournal.size() - 1).setFinished();
+            Race race =raceJournal.get(raceJournal.size() - 1);
+            race.setFinished();
+            resultsInformer.informRaceWasStopped(race);
         }
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].stopRace();
@@ -233,8 +234,10 @@ public class MainWindow extends JFrame implements ActionListener {
 
     public void sayFinishedAndUpdateRace(int id) {
         if (raceJournal.size()>0) {
-            raceJournal.get(raceJournal.size()-1).setNodeFinished(id);
-            if (raceJournal.get(raceJournal.size()-1).isFinished()) {
+            Race race =raceJournal.get(raceJournal.size()-1);
+            race.setNodeFinished(id);
+            if (race.isFinished()) {
+                resultsInformer.showResultTable(race, cockroaches);
                 returnToMainMenu();
             }
         }
