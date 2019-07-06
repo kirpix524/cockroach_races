@@ -52,6 +52,7 @@ public class MainWindow extends JFrame implements ActionListener {
         initCockroaches();
         initMenusAndPanels();
         initRaceJournal();
+        //
     }
 
     private void initRaceJournal() {
@@ -125,12 +126,16 @@ public class MainWindow extends JFrame implements ActionListener {
         buttonStopRace.addActionListener(e -> {
             //
             stopRace();
-            ((CardLayout) bottomMenu.getLayout()).show(bottomMenu, "mainMenu");
+            returnToMainMenu();
         });
         raceMenu.add(buttonStopRace);
         return raceMenu;
     }
     //endregion
+
+    private void returnToMainMenu() {
+        ((CardLayout) bottomMenu.getLayout()).show(bottomMenu, "mainMenu");
+    }
 
     private JPanel getSidePanel() {
         JPanel sidePanel = new JPanel(new GridLayout(numberOfTracks + 2, DEFAULT_COLS_SIDE_PANEL, DEFAULT_HGAP_SIDE_PANEL, DEFAULT_VGAP_SIDE_PANEL));
@@ -216,6 +221,33 @@ public class MainWindow extends JFrame implements ActionListener {
         return cockroaches;
     }
 
+    public int getFinishX() {
+        return RaceField.getFinishX();
+    }
+
+    public void updateRaceNode(int id, long newTime, int newPosX) {
+        if (raceJournal.size()>0) {
+            raceJournal.get(raceJournal.size()-1).setNewPosXAndTime(id, newTime, newPosX);
+        }
+    }
+
+    public void sayFinishedAndUpdateRace(int id) {
+        if (raceJournal.size()>0) {
+            raceJournal.get(raceJournal.size()-1).setNodeFinished(id);
+            if (raceJournal.get(raceJournal.size()-1).isFinished()) {
+                returnToMainMenu();
+            }
+        }
+    }
+
+    public long getStartRaceTime() {
+        if (raceJournal.size() > 0) {
+            return raceJournal.get(raceJournal.size() - 1).getStartTime();
+        }
+        return 0;
+    }
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() instanceof JTextField) {
@@ -232,21 +264,12 @@ public class MainWindow extends JFrame implements ActionListener {
         }
     }
 
-    public int getFinishX() {
-        return RaceField.getFinishX();
-    }
-
-    public void updateRaceNode(int id, long newTime, int newPosX) {
-        if (raceJournal.size()>0) {
-            raceJournal.get(raceJournal.size()-1).setNewPosXAndTime(id, newTime, newPosX);
+    public void kickCockroachAtCoordinates(int x, int y) {
+        for (int i =0; i<cockroaches.length; i++) {
+            if (cockroaches[i].isMyCoord(x,y)) {
+                cockroaches[i].moveCockroach(true);
+                return;
+            }
         }
     }
-
-    public void sayFinished(int id) {
-        if (raceJournal.size()>0) {
-            raceJournal.get(raceJournal.size()-1).setNodeFinished(id);
-        }
-    }
-
-
 }

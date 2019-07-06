@@ -6,6 +6,7 @@ import java.awt.*;
 
 public class Cockroach implements Runnable {
     public static final String COCKROACH_THREAD_NAME_PREFIX = "CockroachThread";
+    public static final int KICK_MOVE_KOEF = 5;
     private final double MAX_SLEEP_TIME = 300;
     private final int MIN_SLEEP_TIME = 100;
     private final int MAX_MOVE = 10;
@@ -19,6 +20,7 @@ public class Cockroach implements Runnable {
     //
     private int id;
     private Thread thread;
+    private boolean isRacing;
     //
     private int curX;
     private int curY;
@@ -39,10 +41,10 @@ public class Cockroach implements Runnable {
 
 
     public Cockroach(MainWindow mainWindow, int id, int curX, int curY) {
-        init(mainWindow, id, curX, curY, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_PAW_WIDTH, new Color((int) (255 * Math.random()), (int) (255 * Math.random()), (int) (255 * Math.random())), DEFAULT_STEP_LEFT, DEFAULT_NAME_PREFIX + (id + 1));
+        init(mainWindow, id, curX, curY, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_PAW_WIDTH, new Color((int) (255 * Math.random()), (int) (255 * Math.random()), (int) (255 * Math.random())), false, DEFAULT_STEP_LEFT, DEFAULT_NAME_PREFIX + (id + 1));
     }
 
-    private void init(MainWindow mainWindow, int id, int curX, int curY, int width, int height, float pawWidth, Color color, boolean stepLeft, String name) {
+    private void init(MainWindow mainWindow, int id, int curX, int curY, int width, int height, float pawWidth, Color color, boolean isRacing, boolean stepLeft, String name) {
         this.mainWindow = mainWindow;
         this.id = id;
         this.curX = curX;
@@ -51,6 +53,7 @@ public class Cockroach implements Runnable {
         this.height = height;
         this.pawWidth = pawWidth;
         this.color = color;
+        this.isRacing = false;
         this.stepLeft = stepLeft;
         this.name = name;
 
@@ -61,10 +64,12 @@ public class Cockroach implements Runnable {
     public void startRace() {
         thread = new Thread(this, COCKROACH_THREAD_NAME_PREFIX + id);
         thread.start();
+        isRacing=true;
     }
 
     public void stopRace() {
         thread.interrupt();
+        isRacing=false;
     }
 
     public void returnToStart() {
@@ -95,12 +100,27 @@ public class Cockroach implements Runnable {
         return sleepTime;
     }
 
-    synchronized public void moveCockroach() {
-        setCoordinates(curX + (int) (Math.random() * MAX_MOVE), curY);
+    synchronized private void makeMove(int moveX, int moveY) {
+        setCoordinates(curX + moveX, curY+moveY);
+        setLastMoveTime(System.currentTimeMillis());
         mainWindow.updateRaceNode(id, getTime(), getPosX());
         if (getLeft() >= mainWindow.getFinishX()) {
             stopRace();
-            mainWindow.sayFinished(id);
+            mainWindow.sayFinishedAndUpdateRace(id);
+        }
+    }
+
+    synchronized public void moveCockroach() {
+        if (!isRacing) return;
+        makeMove((int) (Math.random() * MAX_MOVE), 0);
+    }
+
+    synchronized public void moveCockroach(boolean isKicked) {
+        if (!isRacing) return;
+        if (isKicked) {
+            makeMove(MAX_MOVE* KICK_MOVE_KOEF,0);
+        } else {
+            moveCockroach();
         }
     }
 
@@ -126,11 +146,12 @@ public class Cockroach implements Runnable {
     }
 
     synchronized public boolean isMyCoord(int x, int y) {
-        if ((getTop() >= y) && (getBottom() <= y) && (getLeft() <= x) && (getRight() >= x)) return true;
+        if ((getTop()<=y) && (getBottom() >= y) && (getLeft() <= x) && (getRight() >= x)) return true;
         return false;
     }
 
-    private void changeStep() {
+    synchronized private void changeStep() {
+        if (!isRacing) return;
         if (lastStepChangeTime > 0) {
             if ((System.currentTimeMillis() - lastStepChangeTime) > MIN_STEP_CHANGE_TIME) {
                 if (stepLeft) {
@@ -186,7 +207,7 @@ public class Cockroach implements Runnable {
     }
 
     public String getInfo() {
-        return getName()+" до финиша осталось "+(mainWindow.getFinishX()-getPosX());
+        return getName()+" до финиша осталось "+(mainWindow.getFinishX()-getPosX())+" время в пути "+getTimeInWay(mainWindow.getStartRaceTime());
     }
 
     public int getID() {
@@ -199,5 +220,9 @@ public class Cockroach implements Runnable {
 
     public int getPosX() {
         return getLeft();
+    }
+
+    public long getTimeInWay(long startTime) {
+        return lastMoveTime - startTime;
     }
 }

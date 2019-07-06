@@ -4,6 +4,8 @@ import ru.surovcevnv.cockroachraces.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class RaceField extends JPanel {
     public static final float DEFAULT_SEPARATOR_WIDTH = 1.0f;
@@ -64,6 +66,16 @@ public class RaceField extends JPanel {
     public RaceField(MainWindow mainWindow) {
         this.mainWindow = mainWindow;
         new EventGenerator(this, REFRESH_TIME);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                if (e.getClickCount()==2) {
+                    mainWindow.kickCockroachAtCoordinates(e.getX(), e.getY());
+                }
+            }
+        });
     }
 
     public static int getFullTrackWidth() {
