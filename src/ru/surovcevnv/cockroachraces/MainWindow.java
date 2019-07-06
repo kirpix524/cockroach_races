@@ -5,10 +5,12 @@ import ru.surovcevnv.cockroachraces.classes.RaceField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class MainWindow extends JFrame {
+public class MainWindow extends JFrame implements ActionListener {
     public static final String DEFAULT_INPUT_NAME_LABEL_TEXT = "         Имя:";
-    public static final int DEFAULT_VGAP_SIDE_PANEL = 100;
+    public static final int DEFAULT_VGAP_SIDE_PANEL = RaceField.TRACK_WIDTH+(2*RaceField.TRACK_INDENT)-20;
     public static final int DEFAULT_HGAP_SIDE_PANEL = 10;
     public static final int DEFAULT_COLS_SIDE_PANEL = 2;
     private final int numberOfTracks;
@@ -16,6 +18,8 @@ public class MainWindow extends JFrame {
     //
     private final Dimension PREFERRED_SIZE_BOTTOM_MENU = new Dimension(1, 60);
     private final String DEFAULT_CAPTION = "Тараканьи бега";
+    private final String DEFAULT_INPUT_NAME_TIP = "Ввод имени для таракана ";
+    private final String DEFAULT_TEXT_FIELD_NAME_PREFIX= "NameTextField";
     private final int DEFAULT_X = 50;
     private final int DEFAULT_Y = 100;
     private final int DEFAULT_WIDTH = 1200;
@@ -121,8 +125,13 @@ public class MainWindow extends JFrame {
         sidePanel.add(new JLabel(""));
         sidePanel.add(new JLabel(""));
         for (int i=0; i<numberOfTracks; i++) {
+            JTextField textField = new JTextField();
+            textField.setToolTipText(DEFAULT_INPUT_NAME_TIP+(i+1));
+            textField.setName(DEFAULT_TEXT_FIELD_NAME_PREFIX+"#"+i);
+            textField.addActionListener(this);
+            //
             sidePanel.add(new JLabel(DEFAULT_INPUT_NAME_LABEL_TEXT));
-            sidePanel.add(new JTextField());  //
+            sidePanel.add(textField);  //
         }
         sidePanel.add(new JLabel(""));
         sidePanel.add(new JLabel(""));
@@ -130,15 +139,21 @@ public class MainWindow extends JFrame {
     }
 
     private void startRace() {
-
+        for (int i=0;i<cockroaches.length; i++) {
+            cockroaches[i].returnToStart();
+            cockroaches[i].startRace();
+        }
     }
 
     private void restartRace() {
-
+        stopRace();
+        startRace();
     }
 
     private void stopRace() {
-
+        for (int i=0;i<cockroaches.length; i++) {
+            cockroaches[i].stopRace();
+        }
     }
 
     public int getNumberOfTracks() {
@@ -147,5 +162,21 @@ public class MainWindow extends JFrame {
 
     public Cockroach[] getCockroaches() {
         return cockroaches;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() instanceof JTextField) {
+            JTextField textField = (JTextField)(e.getSource());
+            String fieldName = textField.getName();
+            String[] arr = fieldName.split("#");
+            if (arr[0].equals(DEFAULT_TEXT_FIELD_NAME_PREFIX)) {
+                int fieldID=Integer.parseInt(arr[1]);
+                if ((fieldID>=0)&&(fieldID<cockroaches.length)) {
+                    cockroaches[fieldID].setName(textField.getText());
+                    textField.setText("");
+                }
+            }
+        }
     }
 }

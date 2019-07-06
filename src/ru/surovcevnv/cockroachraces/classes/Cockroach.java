@@ -3,6 +3,7 @@ package ru.surovcevnv.cockroachraces.classes;
 import java.awt.*;
 
 public class Cockroach implements Runnable{
+    public static final String COCKROACH_THREAD_NAME_PREFIX = "CockroachThread";
     private final double MAX_SLEEP_TIME = 700;
     private final int MIN_SLEEP_TIME = 300;
     private final int MAX_MOVE = 10;
@@ -12,6 +13,7 @@ public class Cockroach implements Runnable{
     private final boolean DEFAULT_STEP_LEFT = false;
     private final int NUMBER_OF_PAW_PAIRS = 4;
     private final int MIN_STEP_CHANGE_TIME = 130;
+    private final String DEFAULT_NAME_PREFIX = "Таракан ";
     //
     private int id;
     private boolean isRacing;
@@ -25,13 +27,18 @@ public class Cockroach implements Runnable{
     private Color color;
     private boolean stepLeft;
     private long lastStepTime;
+    //
+    private int startPositionX;
+    private int startPositionY;
+    private String name;
+
 
 
     public Cockroach(int id, int curX, int curY) {
-        init(id,curX,curY,DEFAULT_WIDTH, DEFAULT_HEIGHT,DEFAULT_PAW_WIDTH,new Color((int)(255*Math.random()), (int)(255*Math.random()),(int)(255*Math.random())),false, DEFAULT_STEP_LEFT);
+        init(id,curX,curY,DEFAULT_WIDTH, DEFAULT_HEIGHT,DEFAULT_PAW_WIDTH,new Color((int)(255*Math.random()), (int)(255*Math.random()),(int)(255*Math.random())),false, DEFAULT_STEP_LEFT, DEFAULT_NAME_PREFIX+(id+1));
     }
 
-    private void init(int id, int curX, int curY, int width, int height, float pawWidth, Color color, boolean isRacing, boolean stepLeft) {
+    private void init(int id, int curX, int curY, int width, int height, float pawWidth, Color color, boolean isRacing, boolean stepLeft, String name) {
         this.id = id;
         this.curX = curX;
         this.curY = curY;
@@ -41,11 +48,15 @@ public class Cockroach implements Runnable{
         this.color = color;
         this.isRacing = isRacing;
         this.stepLeft = stepLeft;
+        this.name = name;
+
+        this.startPositionX = curX;
+        this.startPositionY = curY;
     }
 
     public void startRace() {
         isRacing=true;
-        thread = new Thread(this, "CockroachThread"+id);
+        thread = new Thread(this, COCKROACH_THREAD_NAME_PREFIX +id);
         thread.start();
     }
 
@@ -54,14 +65,19 @@ public class Cockroach implements Runnable{
         thread.interrupt();
     }
 
+    public void returnToStart() {
+        setCoordinates(startPositionX,startPositionY);
+    }
+
     @Override
     public void run() {
-        while (!thread.isInterrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             moveCockroach();
             try {
                 Thread.sleep(getSleepTime());
             } catch (InterruptedException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -147,5 +163,13 @@ public class Cockroach implements Runnable{
 
         g2d.setColor(oldColor);
         g2d.setStroke(oldStroke);
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
