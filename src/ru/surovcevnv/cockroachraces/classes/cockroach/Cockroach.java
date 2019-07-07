@@ -1,6 +1,7 @@
 package ru.surovcevnv.cockroachraces.classes.cockroach;
 
 import ru.surovcevnv.cockroachraces.MainWindow;
+import ru.surovcevnv.cockroachraces.classes.RaceControlCenter;
 
 import java.awt.*;
 
@@ -34,14 +35,14 @@ public class Cockroach {
     private CockroachTHR cockroachTHR;
     private CockroachGR cockroachGR;
     //master
-    private MainWindow mainWindow;
+    private RaceControlCenter raceControlCenter;
 
-    public Cockroach(MainWindow mainWindow, int id, int curX, int curY) {
-        init(mainWindow, id, curX, curY, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_PAW_WIDTH, new Color((int) (255 * Math.random()), (int) (255 * Math.random()), (int) (255 * Math.random())), false, DEFAULT_NAME_PREFIX + (id + 1));
+    public Cockroach(RaceControlCenter raceControlCenter, int id, int curX, int curY) {
+        init(raceControlCenter, id, curX, curY, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_PAW_WIDTH, new Color((int) (255 * Math.random()), (int) (255 * Math.random()), (int) (255 * Math.random())), false, DEFAULT_NAME_PREFIX + (id + 1));
     }
 
-    private void init(MainWindow mainWindow, int id, int curX, int curY, int width, int height, float pawWidth, Color color, boolean isRacing, String name) {
-        this.mainWindow = mainWindow;
+    private void init(RaceControlCenter raceControlCenter, int id, int curX, int curY, int width, int height, float pawWidth, Color color, boolean isRacing, String name) {
+        this.raceControlCenter = raceControlCenter;
         this.id = id;
         this.curX = curX;
         this.curY = curY;
@@ -151,10 +152,10 @@ public class Cockroach {
     synchronized private void makeMove(int moveX, int moveY) {
         setCoordinates(curX + moveX, curY+moveY);
         setLastMoveTime(System.currentTimeMillis());
-        mainWindow.updateRaceNode(id, getTime(), getPosX());
-        if (getLeft() >= mainWindow.getFinishX()) {
+        raceControlCenter.updateRaceNode(id, getTime(), getPosX());
+        if (getLeft() >= raceControlCenter.getFinishX()) {
             stopRace();
-            mainWindow.sayFinishedAndUpdateRace(id);
+            raceControlCenter.sayFinishedAndUpdateRace(id);
         }
     }
 

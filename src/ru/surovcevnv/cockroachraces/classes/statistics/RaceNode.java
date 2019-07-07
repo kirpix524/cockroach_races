@@ -4,24 +4,26 @@ public class RaceNode implements Comparable<RaceNode> {
     public static final int DEFAULT_COCKROACH_POSITION_X = 0;
     private int id;
     private String name;
+    private long raceStartTime;
     private long cockroachTime;
     private int cockroachPositionX;
     private boolean finished;
 
-    public RaceNode(int id, String name, long cockroachTime, int cockroachPositionX) {
-        init(id,name, cockroachTime,cockroachPositionX,false);
+    public RaceNode(int id, String name, long cockroachTime, int cockroachPositionX, long raceStartTime) {
+        init(id,name, cockroachTime,cockroachPositionX,false, raceStartTime);
     }
 
     public RaceNode(int id, String name) {
-        init(id, name, System.currentTimeMillis(), DEFAULT_COCKROACH_POSITION_X,false);
+        init(id, name, System.currentTimeMillis(), DEFAULT_COCKROACH_POSITION_X,false, 0);
     }
 
-    private void init(int id, String name, long cockroachTime, int cockroachPositionX, boolean finished) {
+    private void init(int id, String name, long cockroachTime, int cockroachPositionX, boolean finished, long raceStartTime) {
         this.id = id;
         this.name = name;
         this.cockroachTime = cockroachTime;
         this.cockroachPositionX = cockroachPositionX;
         this.finished = finished;
+        this.raceStartTime = raceStartTime;
     }
 
     @Override
@@ -44,8 +46,8 @@ public class RaceNode implements Comparable<RaceNode> {
         return cockroachTime;
     }
 
-    public float getTimeInWay(long startTime) {
-        return (float)(getTime() - startTime)/1000f;
+    public float getTimeInWay() {
+        return (float)(getTime() - raceStartTime)/1000f;
     }
 
     public void setTime(long time) {

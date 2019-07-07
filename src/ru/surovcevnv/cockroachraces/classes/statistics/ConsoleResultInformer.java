@@ -4,15 +4,12 @@ import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
 import ru.surovcevnv.cockroachraces.interfaces.statistics.RaceResultsInformer;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 public class ConsoleResultInformer implements RaceResultsInformer {
     private final int NAME_COLOUMN_SIZE = 40;
     private final int PLACE_COLOUMN_SIZE = 10;
     private final int TIME_COLOUMN_SIZE = 20;
-
-
 
     @Override
     public void showResultTable(Race race, Cockroach[] cockroaches) {
@@ -28,7 +25,7 @@ public class ConsoleResultInformer implements RaceResultsInformer {
         System.out.println("--------------------------------------------------------------------------");
 
         for(int i=0; i<races.length; i++) {
-            System.out.println(String.format(format,""+(i+1),races[i].getName(),""+races[i].getTimeInWay(race.getStartTime())));
+            System.out.println(String.format(format,""+(i+1),races[i].getName(),""+races[i].getTimeInWay()));
         }
         System.out.println("--------------------------------------------------------------------------");
     }

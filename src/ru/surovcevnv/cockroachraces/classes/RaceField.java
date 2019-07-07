@@ -1,6 +1,5 @@
 package ru.surovcevnv.cockroachraces.classes;
 
-import ru.surovcevnv.cockroachraces.MainWindow;
 import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
 
 import javax.swing.*;
@@ -13,7 +12,7 @@ public class RaceField extends JPanel {
     public static final float DEFAULT_SEPARATOR_WIDTH = 1.0f;
     private final Color DEFAULT_BORDER_COLOR = Color.BLACK;
     private final float DEFAULT_BORDER_WIDTH = 5.0f;
-    private MainWindow mainWindow;
+    private RaceControlCenter raceControlCenter;
     //
     private final int STAT_INFO_X = 100;
     private final int STAT_INFO_Y = 20;
@@ -65,8 +64,8 @@ public class RaceField extends JPanel {
         }
     }
 
-    public RaceField(MainWindow mainWindow) {
-        this.mainWindow = mainWindow;
+    public RaceField(RaceControlCenter raceControlCenter) {
+        this.raceControlCenter = raceControlCenter;
         new EventGenerator(this, REFRESH_TIME);
 
         addMouseListener(new MouseAdapter() {
@@ -74,7 +73,7 @@ public class RaceField extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 if (e.getClickCount()==2) {
-                    mainWindow.kickCockroachAtCoordinates(e.getX(), e.getY());
+                    raceControlCenter.kickCockroachAtCoordinates(e.getX(), e.getY());
                 }
             }
         });
@@ -137,7 +136,7 @@ public class RaceField extends JPanel {
     }
 
     private void drawTrackInfo(Graphics g, int id) {
-        Cockroach[] cockroaches = mainWindow.getCockroaches();
+        Cockroach[] cockroaches = raceControlCenter.getCockroaches();
         Graphics2D g2d = (Graphics2D) g;
         Font oldFont = g2d.getFont();
         //
@@ -151,7 +150,7 @@ public class RaceField extends JPanel {
     }
 
     private void drawStatInfo(Graphics g) {
-        String raceInfo = mainWindow.getStatInfo();
+        String raceInfo = raceControlCenter.getStatInfo();
         Graphics2D g2d = (Graphics2D) g;
         Font oldFont = g2d.getFont();
         //
@@ -163,7 +162,7 @@ public class RaceField extends JPanel {
 
     private void drawField(Graphics g) {
         drawStatInfo(g);
-        int numberOfTracks = mainWindow.getNumberOfTracks();
+        int numberOfTracks = raceControlCenter.getNumberOfTracks();
         for (int i = 0; i < numberOfTracks; i++) {
             drawTrack(g,i);
             drawFinishLine(g,i);
@@ -186,7 +185,7 @@ public class RaceField extends JPanel {
         prepareBuffer(bi, gbi, g);
         //
         drawField(gbi);
-        Cockroach[] cockroaches = mainWindow.getCockroaches();
+        Cockroach[] cockroaches = raceControlCenter.getCockroaches();
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].draw(gbi);
         }

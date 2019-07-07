@@ -19,7 +19,7 @@ public class MainWindow extends JFrame implements ActionListener {
     public static final int DEFAULT_VGAP_SIDE_PANEL = RaceField.TRACK_WIDTH + (2 * RaceField.TRACK_INDENT) - 20;
     public static final int DEFAULT_HGAP_SIDE_PANEL = 10;
     public static final int DEFAULT_COLS_SIDE_PANEL = 2;
-    private final int numberOfTracks;
+    public static final String NAME_PREFIX_DELIMETER = "#";
     //region constants
     //
     private final Dimension PREFERRED_SIZE_BOTTOM_MENU = new Dimension(1, 60);
@@ -36,35 +36,26 @@ public class MainWindow extends JFrame implements ActionListener {
     private final String CAPTION_BUTTON_STOP_RACE = "Остановить забег";
     //endregion
 
-    private Cockroach[] cockroaches;
     private JPanel bottomMenu;
     private JPanel sidePanel;
     private RaceField raceField;
-    private RaceJournal raceJournal;
+
     //
-    private RaceResultsInformer resultsInformer;
+    private RaceControlCenter raceControlCenter;
     //
-    public MainWindow(int numberOfTracks) {
-        this.numberOfTracks = numberOfTracks;
+    public MainWindow(RaceControlCenter raceControlCenter) {
+        this.raceControlCenter = raceControlCenter;
+        raceControlCenter.setMainWindow(this);
         setTitle(DEFAULT_CAPTION);
         setBounds(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
-        setVisible(true);
-        //
-        initCockroaches();
         initMenusAndPanels();
-        //
-        raceJournal = new RaceJournal();
-        resultsInformer = new ConsoleResultInformer();
+        setVisible(true);
+
     }
 
-    private void initCockroaches() {
-        cockroaches = new Cockroach[numberOfTracks];
-        for (int i = 0; i < numberOfTracks; i++) {
-            cockroaches[i] = new Cockroach(this, i, Cockroach.DEFAULT_WIDTH / 2, RaceField.TRACK_START_Y + (RaceField.getFullTrackWidth() / 2) + (i * RaceField.getFullTrackWidth()));
-        }
-    }
+
 
     private void initMenusAndPanels() {
         bottomMenu = getBottomMenu();
@@ -78,7 +69,7 @@ public class MainWindow extends JFrame implements ActionListener {
         //
         ((CardLayout) bottomMenu.getLayout()).show(bottomMenu, "mainMenu");
         //
-        raceField = new RaceField(this);
+        raceField = new RaceField(raceControlCenter);
         sidePanel = getSidePanel();
         JPanel fieldPanel = new JPanel(new BorderLayout());
         fieldPanel.add(sidePanel, BorderLayout.WEST);
@@ -98,7 +89,7 @@ public class MainWindow extends JFrame implements ActionListener {
         JPanel mainMenu = new JPanel(new GridLayout());
         JButton buttonStartRace = new JButton(CAPTION_BUTTON_START_RACE);
         buttonStartRace.addActionListener(e -> {
-            startRace();
+            raceControlCenter.startRace();
             ((CardLayout) bottomMenu.getLayout()).show(bottomMenu, "raceMenu");
         });
         mainMenu.add(buttonStartRace);
@@ -118,32 +109,32 @@ public class MainWindow extends JFrame implements ActionListener {
         JButton buttonRestartRace = new JButton(CAPTION_BUTTON_RESTART_RACE);
         buttonRestartRace.addActionListener(e -> {
             //
-            restartRace();
+            raceControlCenter.restartRace();
         });
         raceMenu.add(buttonRestartRace);
         //
         JButton buttonStopRace = new JButton(CAPTION_BUTTON_STOP_RACE);
         buttonStopRace.addActionListener(e -> {
             //
-            stopRace();
+            raceControlCenter.stopRace();
             returnToMainMenu();
         });
         raceMenu.add(buttonStopRace);
         return raceMenu;
     }
 
-    private void returnToMainMenu() {
+    public void returnToMainMenu() {
         ((CardLayout) bottomMenu.getLayout()).show(bottomMenu, "mainMenu");
     }
 
     private JPanel getSidePanel() {
-        JPanel sidePanel = new JPanel(new GridLayout(numberOfTracks + 2, DEFAULT_COLS_SIDE_PANEL, DEFAULT_HGAP_SIDE_PANEL, DEFAULT_VGAP_SIDE_PANEL));
+        JPanel sidePanel = new JPanel(new GridLayout(raceControlCenter.getNumberOfTracks() + 2, DEFAULT_COLS_SIDE_PANEL, DEFAULT_HGAP_SIDE_PANEL, DEFAULT_VGAP_SIDE_PANEL));
         sidePanel.add(new JLabel(""));
         sidePanel.add(new JLabel(""));
-        for (int i = 0; i < numberOfTracks; i++) {
+        for (int i = 0; i < raceControlCenter.getNumberOfTracks(); i++) {
             JTextField textField = new JTextField();
             textField.setToolTipText(DEFAULT_INPUT_NAME_TIP + (i + 1));
-            textField.setName(DEFAULT_TEXT_FIELD_NAME_PREFIX + "#" + i);
+            textField.setName(DEFAULT_TEXT_FIELD_NAME_PREFIX + NAME_PREFIX_DELIMETER + i);
             textField.addActionListener(this);
             //
             sidePanel.add(new JLabel(DEFAULT_INPUT_NAME_LABEL_TEXT));
@@ -155,118 +146,18 @@ public class MainWindow extends JFrame implements ActionListener {
     }
     //endregion
 
-    private void startRace() {
-        raceJournal.startNewRace();
-        for (int i = 0; i < cockroaches.length; i++) {
-            cockroaches[i].returnToStart();
-            raceJournal.getCurrentRace().addRaceNode(new RaceNode(cockroaches[i].getID(),cockroaches[i].getName(), cockroaches[i].getTime(), cockroaches[i].getPosX()));
-        }
-        for (int i = 0; i < cockroaches.length; i++) {
-            cockroaches[i].startRace();
-        }
-        resultsInformer.informRaceWasStarted(raceJournal.getCurrentRace());
-    }
-
-    private void restartRace() {
-        stopRace();
-        startRace();
-    }
-
-    private void stopRace() {
-        if (raceJournal.getCurrentRace() !=null) {
-            raceJournal.getCurrentRace().setFinished();
-            resultsInformer.informRaceWasStopped(raceJournal.getCurrentRace());
-        }
-        for (int i = 0; i < cockroaches.length; i++) {
-            cockroaches[i].stopRace();
-        }
-    }
-
-    public String getStatInfo() {
-        String statInfo;
-        if (raceJournal.getCurrentRace() !=null) {
-            RaceNode leader = raceJournal.getCurrentRace().getLeader();
-            statInfo = "Забег номер " + raceJournal.getCurrentRace().getNum();
-            boolean isFinished = raceJournal.getCurrentRace().isFinished();
-            boolean isEveryoneFinished = raceJournal.getCurrentRace().isEveryoneFinished();
-            if (isFinished) {
-                if (!isEveryoneFinished) {
-                    statInfo += " завершен досрочно";
-                } else {
-                    statInfo += " завершен";
-                }
-
-            } else {
-                statInfo += " продолжается";
-            }
-            if (leader != null) {
-                if (isFinished && isEveryoneFinished) {
-                    statInfo += ", победил " + leader.getName();
-                } else if (isFinished && (!isEveryoneFinished)) {
-                    statInfo += ", последний лидировал " + leader.getName();
-                }else {
-                    statInfo += ", лидирует " + leader.getName();
-                }
-            }
-        } else {
-            statInfo = "Еще ни одного забега не состоялось";
-        }
-        return statInfo;
-    }
-
-    public int getNumberOfTracks() {
-        return numberOfTracks;
-    }
-
-    public Cockroach[] getCockroaches() {
-        return cockroaches;
-    }
-
-    public int getFinishX() {
-        return RaceField.getFinishX();
-    }
-
-    public void updateRaceNode(int id, long newTime, int newPosX) {
-        if (raceJournal.getCurrentRace()!=null) {
-            raceJournal.getCurrentRace().setNewPosXAndTime(id, newTime, newPosX);
-        } else {
-            //todo
-        }
-    }
-
-    public void sayFinishedAndUpdateRace(int id) {
-        if (raceJournal.getCurrentRace()!=null) {
-            raceJournal.getCurrentRace().setNodeFinished(id);
-            if (raceJournal.getCurrentRace().isFinished()) {
-                resultsInformer.showResultTable(raceJournal.getCurrentRace(), cockroaches);
-                returnToMainMenu();
-            }
-        }
-    }
-
-
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() instanceof JTextField) {
             JTextField textField = (JTextField) (e.getSource());
             String fieldName = textField.getName();
-            String[] arr = fieldName.split("#");
+            String[] arr = fieldName.split(NAME_PREFIX_DELIMETER);
             if (arr[0].equals(DEFAULT_TEXT_FIELD_NAME_PREFIX)) {
-                int fieldID = Integer.parseInt(arr[1]);
-                if ((fieldID >= 0) && (fieldID < cockroaches.length)) {
-                    cockroaches[fieldID].setName(textField.getText());
-                    textField.setText("");
-                }
+                raceControlCenter.renameCockroach(Integer.parseInt(arr[1]), textField.getText());
+                textField.setText("");
             }
         }
     }
 
-    public void kickCockroachAtCoordinates(int x, int y) {
-        for (int i =0; i<cockroaches.length; i++) {
-            if (cockroaches[i].isMyCoord(x,y)) {
-                cockroaches[i].moveCockroach(true);
-                return;
-            }
-        }
-    }
+
 }
