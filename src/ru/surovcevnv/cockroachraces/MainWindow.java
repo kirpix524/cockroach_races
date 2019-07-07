@@ -1,6 +1,7 @@
 package ru.surovcevnv.cockroachraces;
 
 import ru.surovcevnv.cockroachraces.classes.*;
+import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
 import ru.surovcevnv.cockroachraces.interfaces.RaceResultsInformer;
 
 import javax.swing.*;
@@ -164,6 +165,7 @@ public class MainWindow extends JFrame implements ActionListener {
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].startRace();
         }
+        resultsInformer.informRaceWasStarted(newRace);
     }
 
     private void restartRace() {
@@ -183,7 +185,7 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     public String getStatInfo() {
-        String statInfo = "";
+        String statInfo;
         if (raceJournal.size() > 0) {
             RaceNode leader = raceJournal.get(raceJournal.size() - 1).getLeader();
             statInfo = "Забег номер " + raceJournal.size();

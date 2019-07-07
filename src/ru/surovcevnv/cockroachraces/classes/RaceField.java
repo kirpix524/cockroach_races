@@ -1,6 +1,7 @@
 package ru.surovcevnv.cockroachraces.classes;
 
 import ru.surovcevnv.cockroachraces.MainWindow;
+import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
 
 import javax.swing.*;
 import java.awt.*;

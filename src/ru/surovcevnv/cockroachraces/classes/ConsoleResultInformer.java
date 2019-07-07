@@ -1,8 +1,11 @@
 package ru.surovcevnv.cockroachraces.classes;
 
+import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
 import ru.surovcevnv.cockroachraces.interfaces.RaceResultsInformer;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ConsoleResultInformer implements RaceResultsInformer {
     private final int NAME_COLOUMN_SIZE = 40;
@@ -18,7 +21,7 @@ public class ConsoleResultInformer implements RaceResultsInformer {
             //todo
             return;
         }
-        System.out.println("Забег номер "+race.getNum()+" завершен! Результаты в таблице");
+        System.out.println("Забег номер "+race.getNum()+" завершен в "+(new SimpleDateFormat("HH:mm:ss").format(new Date()))+ "! Результаты в таблице");
         String format = "|%-"+PLACE_COLOUMN_SIZE+"s|%-"+NAME_COLOUMN_SIZE+"s|%-"+TIME_COLOUMN_SIZE+"s|";
         System.out.println("--------------------------------------------------------------------------");
         System.out.println(String.format(format,"Место","Имя","Время"));
@@ -32,6 +35,11 @@ public class ConsoleResultInformer implements RaceResultsInformer {
 
     @Override
     public void informRaceWasStopped(Race race) {
-        System.out.println("Забег номер "+race.getNum()+" был прерван!");
+        System.out.println("Забег номер "+race.getNum()+" был прерван в "+(new SimpleDateFormat("HH:mm:ss").format(new Date()))+ "!");
+    }
+
+    @Override
+    public void informRaceWasStarted(Race race) {
+        System.out.println("Забег номер "+race.getNum()+" был начат в "+(new SimpleDateFormat("HH:mm:ss").format(new Date()))+ "!");
     }
 }
