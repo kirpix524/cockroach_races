@@ -9,11 +9,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class MainWindow extends JFrame implements ActionListener {
-    public static final String DEFAULT_INPUT_NAME_LABEL_TEXT = "         Имя:";
-    public static final int DEFAULT_VGAP_SIDE_PANEL = RaceField.DEFAULT_TRACK_WIDTH + (2 * RaceField.DEFAULT_TRACK_INDENT) - 20;
-    public static final int DEFAULT_HGAP_SIDE_PANEL = 10;
-    public static final int DEFAULT_COLS_SIDE_PANEL = 2;
-    public static final String NAME_PREFIX_DELIMETER = "#";
+    private final int DEFAULT_SCROLL_SPEED = 20;
+    private final String DEFAULT_INPUT_NAME_LABEL_TEXT = "         Имя:";
+    private final int DEFAULT_VGAP_SIDE_PANEL = RaceField.DEFAULT_TRACK_WIDTH + (2 * RaceField.DEFAULT_TRACK_INDENT) - 20;
+    private final int DEFAULT_HGAP_SIDE_PANEL = 10;
+    private final int DEFAULT_COLS_SIDE_PANEL = 2;
+    private final String NAME_PREFIX_DELIMETER = "#";
     //region constants
     //
     private final Dimension PREFERRED_SIZE_BOTTOM_MENU = new Dimension(1, 60);
@@ -42,7 +43,7 @@ public class MainWindow extends JFrame implements ActionListener {
         setTitle(DEFAULT_CAPTION);
         setBounds(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setResizable(false);
+        setResizable(true);
         initMenusAndPanels();
         setVisible(true);
 
@@ -65,10 +66,10 @@ public class MainWindow extends JFrame implements ActionListener {
         fieldPanel.add(sidePanel, BorderLayout.WEST);
         fieldPanel.add(raceControlCenter.getRaceFieldGR(), BorderLayout.CENTER);
         JScrollPane scrollPane = new JScrollPane(fieldPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(DEFAULT_SCROLL_SPEED);
         this.add(scrollPane, BorderLayout.CENTER);
     }
 
-    //region menus
     private JPanel getBottomMenu() {
         JPanel bottom = new JPanel(new CardLayout());
         bottom.setPreferredSize(PREFERRED_SIZE_BOTTOM_MENU); //
@@ -134,7 +135,6 @@ public class MainWindow extends JFrame implements ActionListener {
         sidePanel.add(new JLabel(""));
         return sidePanel;
     }
-    //endregion
 
     @Override
     public void actionPerformed(ActionEvent e) {

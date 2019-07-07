@@ -9,7 +9,7 @@ import ru.surovcevnv.cockroachraces.classes.statistics.RaceJournal;
 import ru.surovcevnv.cockroachraces.classes.statistics.RaceNode;
 import ru.surovcevnv.cockroachraces.interfaces.statistics.RaceResultsInformer;
 
-public class RaceControlCenter {
+public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     private final int numberOfTracks;
     private Cockroach[] cockroaches;
     private RaceJournal raceJournal;
@@ -44,11 +44,14 @@ public class RaceControlCenter {
         if (raceJournal.getCurrentRace()!=null) {
             raceJournal.getCurrentRace().setNewPosXAndTime(id, newTime, newPosX);
         } else {
-            //todo
+            throw new RuntimeException("Unable to update race node, unable to get current race");
         }
     }
 
     public void startRace() {
+        if (raceJournal==null) {
+            throw new RuntimeException("Unable start race, raceJournal is null");
+        }
         raceJournal.startNewRace();
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].returnToStart();
@@ -128,6 +131,8 @@ public class RaceControlCenter {
     public void renameCockroach(int id, String name) {
         if ((id >= 0) && (id < cockroaches.length)) {
             cockroaches[id].setName(name);
+        } else {
+            throw new RuntimeException("Incorrect cockroach id");
         }
     }
 
@@ -145,4 +150,9 @@ public class RaceControlCenter {
     }
 
 
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        System.out.println("uncaught exception");
+        e.printStackTrace();
+    }
 }

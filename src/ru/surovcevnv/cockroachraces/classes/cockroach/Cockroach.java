@@ -100,7 +100,7 @@ public class Cockroach {
     }
 
     public String getInfo() {
-//        return getName()+" до финиша осталось "+(mainWindow.getFinishX()-getPosX());
+//        return getName()+" до финиша осталось "+(raceControlCenter.getFinishX()-getPosX());
         return getName();
     }
 
@@ -159,13 +159,9 @@ public class Cockroach {
         }
     }
 
-    synchronized private void setCoordinates(int newX, int newY) {  //todo check bounds
+    synchronized private void setCoordinates(int newX, int newY) {  //
         curX = newX;
         curY = newY;
-    }
-
-    private float getTimeInWay(long startTime) {
-        return (float)(lastMoveTime - startTime)/1000f;
     }
 
     boolean isRacing() {
