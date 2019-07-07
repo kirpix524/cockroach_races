@@ -2,6 +2,8 @@ package ru.surovcevnv.cockroachraces.classes;
 
 import ru.surovcevnv.cockroachraces.MainWindow;
 import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
+import ru.surovcevnv.cockroachraces.classes.racefield.RaceField;
+import ru.surovcevnv.cockroachraces.classes.racefield.RaceFieldGR;
 import ru.surovcevnv.cockroachraces.classes.statistics.ConsoleResultInformer;
 import ru.surovcevnv.cockroachraces.classes.statistics.RaceJournal;
 import ru.surovcevnv.cockroachraces.classes.statistics.RaceNode;
@@ -11,14 +13,16 @@ public class RaceControlCenter {
     private final int numberOfTracks;
     private Cockroach[] cockroaches;
     private RaceJournal raceJournal;
+    private RaceField raceField;
     private RaceResultsInformer resultsInformer;
     private MainWindow mainWindow;
 
     public RaceControlCenter(int numberOfTracks) {
         this.numberOfTracks = numberOfTracks;
-        initCockroaches();
         raceJournal = new RaceJournal();
         resultsInformer = new ConsoleResultInformer();
+        raceField = new RaceField(this);
+        initCockroaches();
     }
 
     public void setMainWindow(MainWindow mainWindow) {
@@ -32,7 +36,7 @@ public class RaceControlCenter {
     private void initCockroaches() {
         cockroaches = new Cockroach[numberOfTracks];
         for (int i = 0; i < numberOfTracks; i++) {
-            cockroaches[i] = new Cockroach(this, i, Cockroach.DEFAULT_WIDTH / 2, RaceField.TRACK_START_Y + (RaceField.getFullTrackWidth() / 2) + (i * RaceField.getFullTrackWidth()));
+            cockroaches[i] = new Cockroach(this, i, Cockroach.DEFAULT_WIDTH / 2, raceField.getTrackStartY() + (raceField.getFullTrackWidth() / 2) + (i * raceField.getFullTrackWidth()));
         }
     }
 
@@ -118,7 +122,7 @@ public class RaceControlCenter {
     }
 
     public int getFinishX() {
-        return RaceField.getFinishX();
+        return raceField.getFinishX();
     }
 
     public void renameCockroach(int id, String name) {
@@ -134,6 +138,10 @@ public class RaceControlCenter {
                 return;
             }
         }
+    }
+
+    public RaceFieldGR getRaceFieldGR() {
+        return raceField.getRaceFieldGR();
     }
 
 

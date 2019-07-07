@@ -1,22 +1,16 @@
 package ru.surovcevnv.cockroachraces;
 
 import ru.surovcevnv.cockroachraces.classes.*;
-import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
-import ru.surovcevnv.cockroachraces.classes.statistics.ConsoleResultInformer;
-import ru.surovcevnv.cockroachraces.classes.statistics.Race;
-import ru.surovcevnv.cockroachraces.classes.statistics.RaceJournal;
-import ru.surovcevnv.cockroachraces.classes.statistics.RaceNode;
-import ru.surovcevnv.cockroachraces.interfaces.statistics.RaceResultsInformer;
+import ru.surovcevnv.cockroachraces.classes.racefield.RaceField;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 public class MainWindow extends JFrame implements ActionListener {
     public static final String DEFAULT_INPUT_NAME_LABEL_TEXT = "         Имя:";
-    public static final int DEFAULT_VGAP_SIDE_PANEL = RaceField.TRACK_WIDTH + (2 * RaceField.TRACK_INDENT) - 20;
+    public static final int DEFAULT_VGAP_SIDE_PANEL = RaceField.DEFAULT_TRACK_WIDTH + (2 * RaceField.DEFAULT_TRACK_INDENT) - 20;
     public static final int DEFAULT_HGAP_SIDE_PANEL = 10;
     public static final int DEFAULT_COLS_SIDE_PANEL = 2;
     public static final String NAME_PREFIX_DELIMETER = "#";
@@ -38,7 +32,6 @@ public class MainWindow extends JFrame implements ActionListener {
 
     private JPanel bottomMenu;
     private JPanel sidePanel;
-    private RaceField raceField;
 
     //
     private RaceControlCenter raceControlCenter;
@@ -55,8 +48,6 @@ public class MainWindow extends JFrame implements ActionListener {
 
     }
 
-
-
     private void initMenusAndPanels() {
         bottomMenu = getBottomMenu();
         this.add(bottomMenu, BorderLayout.SOUTH);
@@ -69,11 +60,10 @@ public class MainWindow extends JFrame implements ActionListener {
         //
         ((CardLayout) bottomMenu.getLayout()).show(bottomMenu, "mainMenu");
         //
-        raceField = new RaceField(raceControlCenter);
         sidePanel = getSidePanel();
         JPanel fieldPanel = new JPanel(new BorderLayout());
         fieldPanel.add(sidePanel, BorderLayout.WEST);
-        fieldPanel.add(raceField, BorderLayout.CENTER);
+        fieldPanel.add(raceControlCenter.getRaceFieldGR(), BorderLayout.CENTER);
         JScrollPane scrollPane = new JScrollPane(fieldPanel);
         this.add(scrollPane, BorderLayout.CENTER);
     }

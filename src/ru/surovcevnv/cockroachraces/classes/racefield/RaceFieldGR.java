@@ -1,5 +1,6 @@
-package ru.surovcevnv.cockroachraces.classes;
+package ru.surovcevnv.cockroachraces.classes.racefield;
 
+import ru.surovcevnv.cockroachraces.classes.RaceControlCenter;
 import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
 
 import javax.swing.*;
@@ -8,39 +9,32 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
-public class RaceField extends JPanel {
-    public static final float DEFAULT_SEPARATOR_WIDTH = 1.0f;
+public class RaceFieldGR extends JPanel {
+    private final float DEFAULT_SEPARATOR_WIDTH = 1.0f;
     private final Color DEFAULT_BORDER_COLOR = Color.BLACK;
     private final float DEFAULT_BORDER_WIDTH = 5.0f;
-    private RaceControlCenter raceControlCenter;
-    //
     private final int STAT_INFO_X = 100;
     private final int STAT_INFO_Y = 20;
     private final int TRACK_NUM_X = 0;
     private final int COCKROACH_NAME_X = TRACK_NUM_X + 100;
-    public static final int TRACK_WIDTH = 80;
-    public static final int TRACK_INDENT = 30;
-    private static final int TRACK_LENGTH = 800;
-    private static final int TRACK_START_X = 100;
-    public static final int TRACK_START_Y = 80;
-
-    private static final int FINISH_CELLS_X = 2;
-    private static final int FINISH_CELLS_Y = 8
-    ;
-
-
+    private final int FINISH_CELLS_X = 2;
+    private final int FINISH_CELLS_Y = 8;
     //
     private final int REFRESH_TIME = 50;
+    //
+    //
+    private RaceControlCenter raceControlCenter;
+    private RaceField raceField;
     //
     private final Font FONT_TRACK_NUM = new Font("Times New Roman", Font.BOLD, 38);
     private final Font FONT_COCKROACH_NAME = new Font("Times New Roman", Font.PLAIN, 16);
     private final Font FONT_STAT_INFO = new Font("Times New Roman", Font.PLAIN, 25);
 
-    private class EventGenerator extends Thread {
+    private class RepaintEventGenerator extends Thread {
         JPanel me;
         int refreshTime;
 
-        EventGenerator(JPanel me, int refreshTime) {
+        RepaintEventGenerator(JPanel me, int refreshTime) {
             this.me = me;
             this.refreshTime = refreshTime;
             start();
@@ -64,9 +58,10 @@ public class RaceField extends JPanel {
         }
     }
 
-    public RaceField(RaceControlCenter raceControlCenter) {
+    public RaceFieldGR(RaceControlCenter raceControlCenter, RaceField raceField) {
         this.raceControlCenter = raceControlCenter;
-        new EventGenerator(this, REFRESH_TIME);
+        this.raceField = raceField;
+        new RepaintEventGenerator(this, REFRESH_TIME);
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -79,10 +74,6 @@ public class RaceField extends JPanel {
         });
     }
 
-    public static int getFullTrackWidth() {
-        return (TRACK_WIDTH + 2 * TRACK_INDENT);
-    }
-
     private void drawFinishLine(Graphics g, int id) {
         Graphics2D g2d = (Graphics2D) g;
         Color oldColor = g2d.getColor();
@@ -92,9 +83,9 @@ public class RaceField extends JPanel {
         boolean isWhite = false;
         for (int i=0; i<FINISH_CELLS_X; i++) {
             isWhite=!isWhite;
-            x=getFinishX()+i*finishCellSize;
+            x=raceField.getFinishX()+i*finishCellSize;
             for (int j=0; j<FINISH_CELLS_Y; j++) {
-                y=getFinishY(id)+j*finishCellSize;
+                y=raceField.getFinishY(id)+j*finishCellSize;
                 if (isWhite) {
                     g2d.setColor(Color.WHITE);
                     g2d.fillRect(x,y,finishCellSize,finishCellSize);
@@ -110,41 +101,40 @@ public class RaceField extends JPanel {
         g2d.setColor(oldColor);
     }
 
-    private void drawTrack(Graphics g, int id) {
+    private void drawTrack(Graphics g, int number) {
         Graphics2D g2d = (Graphics2D) g;
         Color oldColor = g2d.getColor();
         Stroke oldStroke = g2d.getStroke();
         //
         g2d.setColor(DEFAULT_BORDER_COLOR);
-        int x1 = TRACK_START_X;
-        int y1 = TRACK_START_Y + (id * getFullTrackWidth() + TRACK_INDENT);
-        int x2 = x1 + TRACK_LENGTH;
+        int x1 = raceField.getTrackStartX();
+        int y1 = raceField.getTrackStartY() + (number * raceField.getFullTrackWidth() + raceField.getTrackIndent());
+        int x2 = x1 + raceField.getTrackLength();
         int y2 = y1;
         g2d.setStroke(new BasicStroke(DEFAULT_BORDER_WIDTH));
         g2d.drawLine(x1, y1, x2, y2);
-        y1 = y1 + TRACK_WIDTH;
+        y1 = y1 + raceField.getTrackWidth();
         y2 = y1;
         g2d.drawLine(x1, y1, x2, y2);
         //
         g2d.setStroke(new BasicStroke(DEFAULT_SEPARATOR_WIDTH));
-//            g2d.drawRect(0, TRACK_START_Y + (id * getFullTrackWidth()), this.getWidth(), getFullTrackWidth());
-        g2d.drawLine(0, TRACK_START_Y + (id * getFullTrackWidth()), this.getWidth(), TRACK_START_Y + (id * getFullTrackWidth()));
-        g2d.drawLine(0, TRACK_START_Y + ((id+1) * getFullTrackWidth()), this.getWidth(), TRACK_START_Y + ((id+1) * getFullTrackWidth()));
+        g2d.drawLine(0, raceField.getTrackStartY() + (number * raceField.getFullTrackWidth()), this.getWidth(), raceField.getTrackStartY() + (number * raceField.getFullTrackWidth()));
+        g2d.drawLine(0, raceField.getTrackStartY() + ((number+1) * raceField.getFullTrackWidth()), this.getWidth(), raceField.getTrackStartY() + ((number+1) * raceField.getFullTrackWidth()));
         //
         g2d.setStroke(oldStroke);
         g2d.setColor(oldColor);
     }
 
-    private void drawTrackInfo(Graphics g, int id) {
+    private void drawTrackInfo(Graphics g, int number) {
         Cockroach[] cockroaches = raceControlCenter.getCockroaches();
         Graphics2D g2d = (Graphics2D) g;
         Font oldFont = g2d.getFont();
         //
         g2d.setFont(FONT_TRACK_NUM);
-        g2d.drawString("" + (id + 1), TRACK_NUM_X, TRACK_START_Y + (id * getFullTrackWidth()) + TRACK_INDENT);
+        g2d.drawString("" + (number + 1), TRACK_NUM_X, raceField.getTrackStartY() + (number * raceField.getFullTrackWidth()) + raceField.getTrackIndent());
         //
         g2d.setFont(FONT_COCKROACH_NAME);
-        g2d.drawString(cockroaches[id].getInfo(), COCKROACH_NAME_X, TRACK_START_Y + (id * getFullTrackWidth()) + TRACK_INDENT/2);
+        g2d.drawString(cockroaches[number].getInfo(), COCKROACH_NAME_X, raceField.getTrackStartY() + (number * raceField.getFullTrackWidth()) + raceField.getTrackIndent()/2);
         //
         g2d.setFont(oldFont);
     }
@@ -192,15 +182,7 @@ public class RaceField extends JPanel {
         g.drawImage(bi,0,0,null);
     }
 
-    private static int getFinishWidth(){
-        return (TRACK_WIDTH/FINISH_CELLS_Y)*FINISH_CELLS_X;
-    }
-
-    public static int getFinishX() {
-        return TRACK_START_X+TRACK_LENGTH;
-    }
-
-    private int getFinishY(int id) {
-        return TRACK_START_Y + (id * getFullTrackWidth() + TRACK_INDENT);
+    private int getFinishWidth(){
+        return (raceField.getTrackWidth()/FINISH_CELLS_Y)*FINISH_CELLS_X;
     }
 }
