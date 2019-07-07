@@ -158,7 +158,7 @@ public class MainWindow extends JFrame implements ActionListener {
         Race newRace = new Race(raceJournal.size());
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].returnToStart();
-            newRace.addRaceNode(new RaceNode(cockroaches[i].getID(), cockroaches[i].getTime(), cockroaches[i].getPosX()));
+            newRace.addRaceNode(new RaceNode(cockroaches[i].getID(),cockroaches[i].getName(), cockroaches[i].getTime(), cockroaches[i].getPosX()));
         }
         raceJournal.add(newRace);
         for (int i = 0; i < cockroaches.length; i++) {
@@ -201,11 +201,11 @@ public class MainWindow extends JFrame implements ActionListener {
             }
             if (leader != null) {
                 if (isFinished && isEveryoneFinished) {
-                    statInfo += ", победил " + cockroaches[leader.getID()].getName();
+                    statInfo += ", победил " + leader.getName();
                 } else if (isFinished && (!isEveryoneFinished)) {
-                    statInfo += ", последний лидировал " + cockroaches[leader.getID()].getName();
+                    statInfo += ", последний лидировал " + leader.getName();
                 }else {
-                    statInfo += ", лидирует " + cockroaches[leader.getID()].getName();
+                    statInfo += ", лидирует " + leader.getName();
                 }
             }
         } else {

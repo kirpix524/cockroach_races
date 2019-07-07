@@ -222,7 +222,7 @@ public class Cockroach implements Runnable {
         return getLeft();
     }
 
-    public long getTimeInWay(long startTime) {
-        return lastMoveTime - startTime;
+    public float getTimeInWay(long startTime) {
+        return (float)(lastMoveTime - startTime)/1000f;
     }
 }
