@@ -1,4 +1,4 @@
-package ru.surovcevnv.cockroachraces.classes;
+package ru.surovcevnv.cockroachraces.classes.statistics;
 
 public class RaceNode implements Comparable<RaceNode> {
     public static final int DEFAULT_COCKROACH_POSITION_X = 0;

@@ -2,7 +2,11 @@ package ru.surovcevnv.cockroachraces;
 
 import ru.surovcevnv.cockroachraces.classes.*;
 import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
-import ru.surovcevnv.cockroachraces.interfaces.RaceResultsInformer;
+import ru.surovcevnv.cockroachraces.classes.statistics.ConsoleResultInformer;
+import ru.surovcevnv.cockroachraces.classes.statistics.Race;
+import ru.surovcevnv.cockroachraces.classes.statistics.RaceJournal;
+import ru.surovcevnv.cockroachraces.classes.statistics.RaceNode;
+import ru.surovcevnv.cockroachraces.interfaces.statistics.RaceResultsInformer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,8 +40,8 @@ public class MainWindow extends JFrame implements ActionListener {
     private JPanel bottomMenu;
     private JPanel sidePanel;
     private RaceField raceField;
+    private RaceJournal raceJournal;
     //
-    private ArrayList<Race> raceJournal;
     private RaceResultsInformer resultsInformer;
     //
     public MainWindow(int numberOfTracks) {
@@ -50,13 +54,9 @@ public class MainWindow extends JFrame implements ActionListener {
         //
         initCockroaches();
         initMenusAndPanels();
-        initRaceJournal();
         //
+        raceJournal = new RaceJournal();
         resultsInformer = new ConsoleResultInformer();
-    }
-
-    private void initRaceJournal() {
-        raceJournal = new ArrayList<>();
     }
 
     private void initCockroaches() {
@@ -131,7 +131,6 @@ public class MainWindow extends JFrame implements ActionListener {
         raceMenu.add(buttonStopRace);
         return raceMenu;
     }
-    //endregion
 
     private void returnToMainMenu() {
         ((CardLayout) bottomMenu.getLayout()).show(bottomMenu, "mainMenu");
@@ -154,18 +153,18 @@ public class MainWindow extends JFrame implements ActionListener {
         sidePanel.add(new JLabel(""));
         return sidePanel;
     }
+    //endregion
 
     private void startRace() {
-        Race newRace = new Race(raceJournal.size());
+        raceJournal.startNewRace();
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].returnToStart();
-            newRace.addRaceNode(new RaceNode(cockroaches[i].getID(),cockroaches[i].getName(), cockroaches[i].getTime(), cockroaches[i].getPosX()));
+            raceJournal.getCurrentRace().addRaceNode(new RaceNode(cockroaches[i].getID(),cockroaches[i].getName(), cockroaches[i].getTime(), cockroaches[i].getPosX()));
         }
-        raceJournal.add(newRace);
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].startRace();
         }
-        resultsInformer.informRaceWasStarted(newRace);
+        resultsInformer.informRaceWasStarted(raceJournal.getCurrentRace());
     }
 
     private void restartRace() {
@@ -174,10 +173,9 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     private void stopRace() {
-        if (raceJournal.size() > 0) {
-            Race race =raceJournal.get(raceJournal.size() - 1);
-            race.setFinished();
-            resultsInformer.informRaceWasStopped(race);
+        if (raceJournal.getCurrentRace() !=null) {
+            raceJournal.getCurrentRace().setFinished();
+            resultsInformer.informRaceWasStopped(raceJournal.getCurrentRace());
         }
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].stopRace();
@@ -186,11 +184,11 @@ public class MainWindow extends JFrame implements ActionListener {
 
     public String getStatInfo() {
         String statInfo;
-        if (raceJournal.size() > 0) {
-            RaceNode leader = raceJournal.get(raceJournal.size() - 1).getLeader();
-            statInfo = "Забег номер " + raceJournal.size();
-            boolean isFinished = raceJournal.get(raceJournal.size() - 1).isFinished();
-            boolean isEveryoneFinished = raceJournal.get(raceJournal.size() - 1).isEveryoneFinished();
+        if (raceJournal.getCurrentRace() !=null) {
+            RaceNode leader = raceJournal.getCurrentRace().getLeader();
+            statInfo = "Забег номер " + raceJournal.getCurrentRace().getNum();
+            boolean isFinished = raceJournal.getCurrentRace().isFinished();
+            boolean isEveryoneFinished = raceJournal.getCurrentRace().isEveryoneFinished();
             if (isFinished) {
                 if (!isEveryoneFinished) {
                     statInfo += " завершен досрочно";
@@ -229,27 +227,21 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     public void updateRaceNode(int id, long newTime, int newPosX) {
-        if (raceJournal.size()>0) {
-            raceJournal.get(raceJournal.size()-1).setNewPosXAndTime(id, newTime, newPosX);
+        if (raceJournal.getCurrentRace()!=null) {
+            raceJournal.getCurrentRace().setNewPosXAndTime(id, newTime, newPosX);
+        } else {
+            //todo
         }
     }
 
     public void sayFinishedAndUpdateRace(int id) {
-        if (raceJournal.size()>0) {
-            Race race =raceJournal.get(raceJournal.size()-1);
-            race.setNodeFinished(id);
-            if (race.isFinished()) {
-                resultsInformer.showResultTable(race, cockroaches);
+        if (raceJournal.getCurrentRace()!=null) {
+            raceJournal.getCurrentRace().setNodeFinished(id);
+            if (raceJournal.getCurrentRace().isFinished()) {
+                resultsInformer.showResultTable(raceJournal.getCurrentRace(), cockroaches);
                 returnToMainMenu();
             }
         }
-    }
-
-    public long getStartRaceTime() {
-        if (raceJournal.size() > 0) {
-            return raceJournal.get(raceJournal.size() - 1).getStartTime();
-        }
-        return 0;
     }
 
 

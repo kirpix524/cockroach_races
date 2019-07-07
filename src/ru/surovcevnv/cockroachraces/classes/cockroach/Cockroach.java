@@ -99,7 +99,7 @@ public class Cockroach {
     }
 
     public String getInfo() {
-//        return getName()+" до финиша осталось "+(mainWindow.getFinishX()-getPosX())+" время в пути "+getTimeInWay(mainWindow.getStartRaceTime());
+//        return getName()+" до финиша осталось "+(mainWindow.getFinishX()-getPosX());
         return getName();
     }
 

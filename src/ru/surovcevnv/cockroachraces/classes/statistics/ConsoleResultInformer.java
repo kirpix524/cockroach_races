@@ -1,7 +1,7 @@
-package ru.surovcevnv.cockroachraces.classes;
+package ru.surovcevnv.cockroachraces.classes.statistics;
 
 import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
-import ru.surovcevnv.cockroachraces.interfaces.RaceResultsInformer;
+import ru.surovcevnv.cockroachraces.interfaces.statistics.RaceResultsInformer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,8 +16,8 @@ public class ConsoleResultInformer implements RaceResultsInformer {
 
     @Override
     public void showResultTable(Race race, Cockroach[] cockroaches) {
-        ArrayList<RaceNode> races =race.getRaces();
-        if (races.size()<1) {
+        RaceNode[] races =race.getRaceNodesAsArray();
+        if (races.length<1) {
             //todo
             return;
         }
@@ -27,8 +27,8 @@ public class ConsoleResultInformer implements RaceResultsInformer {
         System.out.println(String.format(format,"Место","Имя","Время"));
         System.out.println("--------------------------------------------------------------------------");
 
-        for(int i=0; i<races.size(); i++) {
-            System.out.println(String.format(format,""+(i+1),races.get(i).getName(),""+races.get(i).getTimeInWay(race.getStartTime())));
+        for(int i=0; i<races.length; i++) {
+            System.out.println(String.format(format,""+(i+1),races[i].getName(),""+races[i].getTimeInWay(race.getStartTime())));
         }
         System.out.println("--------------------------------------------------------------------------");
     }

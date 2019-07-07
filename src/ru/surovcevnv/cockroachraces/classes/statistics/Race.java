@@ -1,4 +1,4 @@
-package ru.surovcevnv.cockroachraces.classes;
+package ru.surovcevnv.cockroachraces.classes.statistics;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,20 +45,6 @@ public class Race {
         return -1;
     }
 
-    synchronized public void setNewTime(int cockroachID, long time) {
-        int i = getNodePositionByCockroachID(cockroachID);
-        if (i==-1) return;  //todo
-        races.get(i).setTime(time);
-        sortNodes();
-    }
-
-    synchronized public void setNewPosX(int cockroachID, int posX) {
-        int i = getNodePositionByCockroachID(cockroachID);
-        if (i==-1) return;  //todo
-        races.get(i).setPosX(posX);
-        sortNodes();
-    }
-
     synchronized public void setNewPosXAndTime(int cockroachID, long time, int posX) {
         int i = getNodePositionByCockroachID(cockroachID);
         if (i==-1) return;  //todo
@@ -68,6 +54,8 @@ public class Race {
     }
 
     synchronized public boolean isEveryoneFinished() {
+        if (races==null) return false;  //todo
+        if (races.size()==0) return false;  //todo
         for (int i=0; i<races.size(); i++) {
             if (!races.get(i).isFinished()) {
                 return false;
@@ -78,7 +66,7 @@ public class Race {
 
     synchronized public void setNodeFinished(int cockroachID) {
         int i = getNodePositionByCockroachID(cockroachID);
-        if (i==-1) return;  //todo
+        if (i<0) return;  //todo
         races.get(i).setFinished();
         if (isEveryoneFinished()) {
             setFinished();
@@ -86,8 +74,8 @@ public class Race {
         sortNodes();
     }
 
-    public ArrayList<RaceNode> getRaces() {
-        return races;
+    public RaceNode[] getRaceNodesAsArray() {
+        return races.toArray(RaceNode[]::new);
     }
 
     public RaceNode getLeader() {

@@ -1,7 +1,7 @@
-package ru.surovcevnv.cockroachraces.interfaces;
+package ru.surovcevnv.cockroachraces.interfaces.statistics;
 
 import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
-import ru.surovcevnv.cockroachraces.classes.Race;
+import ru.surovcevnv.cockroachraces.classes.statistics.Race;
 
 public interface RaceResultsInformer {
     void showResultTable(Race race, Cockroach[] cockroaches);
