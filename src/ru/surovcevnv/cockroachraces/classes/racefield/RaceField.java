@@ -1,6 +1,7 @@
 package ru.surovcevnv.cockroachraces.classes.racefield;
 
 import ru.surovcevnv.cockroachraces.classes.RaceControlCenter;
+import ru.surovcevnv.cockroachraces.classes.exceptions.ResourceNotInitialisedException;
 
 public class RaceField {
     public static final int DEFAULT_TRACK_WIDTH = 80;
@@ -61,10 +62,20 @@ public class RaceField {
     }
 
     public int getFinishY(int number) {
+        if (number<0) {
+            throw new IllegalArgumentException("track number must be >0");
+        }
         return trackStartY + (number * getFullTrackWidth() + trackIndent);
     }
 
     public RaceFieldGR getRaceFieldGR() {
+        checkRaceFieldGR();
         return raceFieldGR;
+    }
+
+    private void checkRaceFieldGR() {
+        if (raceFieldGR==null) {
+            throw new ResourceNotInitialisedException("raceFieldGR is null");
+        }
     }
 }

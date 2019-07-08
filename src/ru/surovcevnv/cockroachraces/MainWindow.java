@@ -1,6 +1,7 @@
 package ru.surovcevnv.cockroachraces;
 
 import ru.surovcevnv.cockroachraces.classes.*;
+import ru.surovcevnv.cockroachraces.classes.exceptions.ResourceNotInitialisedException;
 import ru.surovcevnv.cockroachraces.classes.racefield.RaceField;
 
 import javax.swing.*;
@@ -38,6 +39,7 @@ public class MainWindow extends JFrame implements ActionListener {
     private RaceControlCenter raceControlCenter;
     //
     public MainWindow(RaceControlCenter raceControlCenter) {
+        if (raceControlCenter==null) throw new IllegalArgumentException("raceControlCenter must be not null");
         this.raceControlCenter = raceControlCenter;
         raceControlCenter.setMainWindow(this);
         setTitle(DEFAULT_CAPTION);
@@ -50,6 +52,7 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     private void initMenusAndPanels() {
+        checkRaceControlCenter();
         bottomMenu = getBottomMenu();
         this.add(bottomMenu, BorderLayout.SOUTH);
         //
@@ -80,6 +83,7 @@ public class MainWindow extends JFrame implements ActionListener {
         JPanel mainMenu = new JPanel(new GridLayout());
         JButton buttonStartRace = new JButton(CAPTION_BUTTON_START_RACE);
         buttonStartRace.addActionListener(e -> {
+            checkRaceControlCenter();
             raceControlCenter.startRace();
             ((CardLayout) bottomMenu.getLayout()).show(bottomMenu, "raceMenu");
         });
@@ -95,11 +99,13 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     private JPanel getRaceMenu() {
+
         JPanel raceMenu = new JPanel(new GridLayout());
         //
         JButton buttonRestartRace = new JButton(CAPTION_BUTTON_RESTART_RACE);
         buttonRestartRace.addActionListener(e -> {
             //
+            checkRaceControlCenter();
             raceControlCenter.restartRace();
         });
         raceMenu.add(buttonRestartRace);
@@ -107,6 +113,7 @@ public class MainWindow extends JFrame implements ActionListener {
         JButton buttonStopRace = new JButton(CAPTION_BUTTON_STOP_RACE);
         buttonStopRace.addActionListener(e -> {
             //
+            checkRaceControlCenter();
             raceControlCenter.stopRace();
             returnToMainMenu();
         });
@@ -119,6 +126,7 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     private JPanel getSidePanel() {
+        checkRaceControlCenter();
         JPanel sidePanel = new JPanel(new GridLayout(raceControlCenter.getNumberOfTracks() + 2, DEFAULT_COLS_SIDE_PANEL, DEFAULT_HGAP_SIDE_PANEL, DEFAULT_VGAP_SIDE_PANEL));
         sidePanel.add(new JLabel(""));
         sidePanel.add(new JLabel(""));
@@ -138,6 +146,7 @@ public class MainWindow extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        checkRaceControlCenter();
         if (e.getSource() instanceof JTextField) {
             JTextField textField = (JTextField) (e.getSource());
             String fieldName = textField.getName();
@@ -149,5 +158,10 @@ public class MainWindow extends JFrame implements ActionListener {
         }
     }
 
+    private void checkRaceControlCenter() {
+        if (raceControlCenter==null) {
+            throw new ResourceNotInitialisedException("raceControlCenter is null");
+        }
+    }
 
 }

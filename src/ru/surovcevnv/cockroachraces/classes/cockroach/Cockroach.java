@@ -1,7 +1,7 @@
 package ru.surovcevnv.cockroachraces.classes.cockroach;
 
-import ru.surovcevnv.cockroachraces.MainWindow;
 import ru.surovcevnv.cockroachraces.classes.RaceControlCenter;
+import ru.surovcevnv.cockroachraces.classes.exceptions.ResourceNotInitialisedException;
 
 import java.awt.*;
 
@@ -59,11 +59,13 @@ public class Cockroach {
     }
 
     public void startRace() {
+        checkCockroachTHR();
         cockroachTHR.startRace();
         isRacing=true;
     }
 
     public void stopRace() {
+        checkCockroachTHR();
         cockroachTHR.stopRace();
         isRacing=false;
     }
@@ -88,6 +90,7 @@ public class Cockroach {
     }
 
     public void draw(Graphics g) {
+        checkCockroachGR();
         cockroachGR.draw(g);
     }
 
@@ -150,6 +153,7 @@ public class Cockroach {
     }
 
     synchronized private void makeMove(int moveX, int moveY) {
+        checkRaceControlCenter();
         setCoordinates(curX + moveX, curY+moveY);
         setLastMoveTime(System.currentTimeMillis());
         raceControlCenter.updateRaceNode(id, getTime(), getPosX());
@@ -166,5 +170,23 @@ public class Cockroach {
 
     boolean isRacing() {
         return isRacing;
+    }
+
+    private void checkCockroachTHR() {
+        if (cockroachTHR==null) {
+            throw new ResourceNotInitialisedException("cockroachTHR is null");
+        }
+    }
+
+    private void checkCockroachGR() {
+        if (cockroachGR==null) {
+            throw new ResourceNotInitialisedException("cockroachGR is null");
+        }
+    }
+
+    private void checkRaceControlCenter() {
+        if (raceControlCenter==null) {
+            throw new ResourceNotInitialisedException("raceControlCenter is null");
+        }
     }
 }

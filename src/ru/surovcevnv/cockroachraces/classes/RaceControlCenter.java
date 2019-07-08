@@ -2,12 +2,16 @@ package ru.surovcevnv.cockroachraces.classes;
 
 import ru.surovcevnv.cockroachraces.MainWindow;
 import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
+import ru.surovcevnv.cockroachraces.classes.exceptions.ResourceNotInitialisedException;
 import ru.surovcevnv.cockroachraces.classes.racefield.RaceField;
 import ru.surovcevnv.cockroachraces.classes.racefield.RaceFieldGR;
 import ru.surovcevnv.cockroachraces.classes.statistics.ConsoleResultInformer;
 import ru.surovcevnv.cockroachraces.classes.statistics.RaceJournal;
 import ru.surovcevnv.cockroachraces.classes.statistics.RaceNode;
 import ru.surovcevnv.cockroachraces.interfaces.statistics.RaceResultsInformer;
+
+import java.awt.*;
+import java.util.logging.Logger;
 
 public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     private final int numberOfTracks;
@@ -18,6 +22,9 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     private MainWindow mainWindow;
 
     public RaceControlCenter(int numberOfTracks) {
+        if (numberOfTracks<1) {
+            throw new IllegalArgumentException("numberOfTracks must be >0");
+        }
         this.numberOfTracks = numberOfTracks;
         raceJournal = new RaceJournal();
         resultsInformer = new ConsoleResultInformer();
@@ -26,6 +33,9 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     }
 
     public void setMainWindow(MainWindow mainWindow) {
+        if (mainWindow == null) {
+            throw new IllegalArgumentException("main window can't be null");
+        }
         this.mainWindow = mainWindow;
     }
 
@@ -41,17 +51,18 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     }
 
     public void updateRaceNode(int id, long newTime, int newPosX) {
-        if (raceJournal.getCurrentRace()!=null) {
-            raceJournal.getCurrentRace().setNewPosXAndTime(id, newTime, newPosX);
+        checkCockroachID(id);
+        if (raceJournal.getCurrentRace()==null) {
+            throw new ResourceNotInitialisedException("current race is null");
         } else {
-            throw new RuntimeException("Unable to update race node, unable to get current race");
+            raceJournal.getCurrentRace().setNewPosXAndTime(id, newTime, newPosX);
         }
     }
 
     public void startRace() {
-        if (raceJournal==null) {
-            throw new RuntimeException("Unable start race, raceJournal is null");
-        }
+        checkRaceJournal();
+        checkCockroaches();
+        checkResultsInformer();
         raceJournal.startNewRace();
         for (int i = 0; i < cockroaches.length; i++) {
             cockroaches[i].returnToStart();
@@ -69,6 +80,9 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     }
 
     public void stopRace() {
+        checkRaceJournal();
+        checkCockroaches();
+        checkResultsInformer();
         if (raceJournal.getCurrentRace() !=null) {
             raceJournal.getCurrentRace().setFinished();
             resultsInformer.informRaceWasStopped(raceJournal.getCurrentRace());
@@ -79,6 +93,7 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     }
 
     public String getStatInfo() {
+        checkRaceJournal();
         String statInfo;
         if (raceJournal.getCurrentRace() !=null) {
             RaceNode leader = raceJournal.getCurrentRace().getLeader();
@@ -111,6 +126,10 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     }
 
     public void sayFinishedAndUpdateRace(int id) {
+        checkCockroachID(id);
+        checkRaceJournal();
+        checkResultsInformer();
+        checkMainWindow();
         if (raceJournal.getCurrentRace()!=null) {
             raceJournal.getCurrentRace().setNodeFinished(id);
             if (raceJournal.getCurrentRace().isFinished()) {
@@ -121,22 +140,23 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     }
 
     public Cockroach[] getCockroaches() {
+        checkCockroaches();
         return cockroaches;
     }
 
     public int getFinishX() {
+        checkRaceField();
         return raceField.getFinishX();
     }
 
     public void renameCockroach(int id, String name) {
-        if ((id >= 0) && (id < cockroaches.length)) {
-            cockroaches[id].setName(name);
-        } else {
-            throw new RuntimeException("Incorrect cockroach id");
-        }
+        checkCockroachID(id);
+        checkCockroaches();
+        cockroaches[id].setName(name);
     }
 
     public void kickCockroachAtCoordinates(int x, int y) {
+        checkCockroaches();
         for (int i =0; i<cockroaches.length; i++) {
             if (cockroaches[i].isMyCoord(x,y)) {
                 cockroaches[i].moveCockroach(true);
@@ -146,13 +166,52 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     }
 
     public RaceFieldGR getRaceFieldGR() {
+        checkRaceField();
         return raceField.getRaceFieldGR();
     }
 
 
+    public void checkCockroachID(int id) {
+        if ((id<0)||id>=cockroaches.length) {
+            throw new IllegalArgumentException("cockroachID is out of bounds");
+        }
+    }
+
+    private void checkRaceJournal() {
+        if (raceJournal==null) {
+            throw new ResourceNotInitialisedException("raceJournal is null");
+        }
+    }
+
+    private void checkCockroaches() {
+        if (cockroaches==null) {
+            throw new ResourceNotInitialisedException("Cockroach array is null");
+        }
+        if (cockroaches.length==0) {
+            throw new ResourceNotInitialisedException("Cockroach array is empty");
+        }
+    }
+
+    private void checkResultsInformer() {
+        if (resultsInformer==null) {
+            throw new ResourceNotInitialisedException("resultsInformer is null");
+        }
+    }
+
+    private void checkMainWindow() {
+        if (mainWindow==null) {
+            throw new ResourceNotInitialisedException("mainWindow is null");
+        }
+    }
+
+    private void checkRaceField() {
+        if (raceField==null) {
+            throw new ResourceNotInitialisedException("raceField is null");
+        }
+    }
+
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        System.out.println("uncaught exception");
         e.printStackTrace();
     }
 }

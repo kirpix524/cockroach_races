@@ -1,5 +1,7 @@
 package ru.surovcevnv.cockroachraces.classes.statistics;
 
+import ru.surovcevnv.cockroachraces.classes.exceptions.ResourceNotInitialisedException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -30,15 +32,18 @@ public class Race {
     }
 
     synchronized public void addRaceNode(RaceNode node) {
+        checkRaces();
         races.add(node);
         sortNodes();
     }
 
     synchronized private void sortNodes() {
+        checkRaces();
         Collections.sort(races);
     }
 
     synchronized public int getNodePositionByCockroachID(int cockroachID) {
+        checkRaces();
         for (int i=0; i<races.size(); i++) {
             if (races.get(i).getID()==cockroachID) return i;
         }
@@ -47,15 +52,14 @@ public class Race {
 
     synchronized public void setNewPosXAndTime(int cockroachID, long time, int posX) {
         int i = getNodePositionByCockroachID(cockroachID);
-        if (i==-1) return;  //todo
+        if (i==-1) return;
         races.get(i).setPosX(posX);
         races.get(i).setTime(time);
         sortNodes();
     }
 
     synchronized public boolean isEveryoneFinished() {
-        if (races==null) return false;  //todo
-        if (races.size()==0) return false;  //todo
+        checkRaces();
         for (int i=0; i<races.size(); i++) {
             if (!races.get(i).isFinished()) {
                 return false;
@@ -65,8 +69,9 @@ public class Race {
     }
 
     synchronized public void setNodeFinished(int cockroachID) {
+        checkRaces();
         int i = getNodePositionByCockroachID(cockroachID);
-        if (i<0) return;  //todo
+        if (i<0) return;
         races.get(i).setFinished();
         if (isEveryoneFinished()) {
             setFinished();
@@ -75,15 +80,16 @@ public class Race {
     }
 
     public RaceNode[] getRaceNodesAsArray() {
+        checkRaces();
         return races.toArray(RaceNode[]::new);
     }
 
     public RaceNode getLeader() {
-        if (races.size()>0) {
-            return races.get(0);
-        } else {
-            return null;
+        checkRaces();
+        if (races.size()==0) {
+            throw new ResourceNotInitialisedException("races is empty");
         }
+        return races.get(0);
     }
 
     public long getStartTime() {
@@ -102,4 +108,10 @@ public class Race {
         return (id+1);
     }
 
+
+    private void checkRaces() {
+        if (races==null) {
+            throw new ResourceNotInitialisedException("races is null");
+        }
+    }
 }

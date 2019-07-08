@@ -2,6 +2,7 @@ package ru.surovcevnv.cockroachraces.classes.racefield;
 
 import ru.surovcevnv.cockroachraces.classes.RaceControlCenter;
 import ru.surovcevnv.cockroachraces.classes.cockroach.Cockroach;
+import ru.surovcevnv.cockroachraces.classes.exceptions.ResourceNotInitialisedException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,6 +43,9 @@ public class RaceFieldGR extends JPanel {
 
         @Override
         public void run() {
+            if (me==null) {
+                throw new ResourceNotInitialisedException("me is null in EventGenerator");
+            }
             while (!isInterrupted()) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -75,6 +79,8 @@ public class RaceFieldGR extends JPanel {
     }
 
     private void drawFinishLine(Graphics g, int id) {
+
+
         Graphics2D g2d = (Graphics2D) g;
         Color oldColor = g2d.getColor();
         //
@@ -126,6 +132,9 @@ public class RaceFieldGR extends JPanel {
     }
 
     private void drawTrackInfo(Graphics g, int number) {
+        if (number < 0 ) throw new IllegalArgumentException("number must be >0");
+        checkG(g);
+        checkRaceControlCenter();
         Cockroach[] cockroaches = raceControlCenter.getCockroaches();
         Graphics2D g2d = (Graphics2D) g;
         Font oldFont = g2d.getFont();
@@ -140,6 +149,8 @@ public class RaceFieldGR extends JPanel {
     }
 
     private void drawStatInfo(Graphics g) {
+        checkG(g);
+        checkRaceControlCenter();
         String raceInfo = raceControlCenter.getStatInfo();
         Graphics2D g2d = (Graphics2D) g;
         Font oldFont = g2d.getFont();
@@ -151,6 +162,8 @@ public class RaceFieldGR extends JPanel {
     }
 
     private void drawField(Graphics g) {
+        checkG(g);
+        checkRaceControlCenter();
         drawStatInfo(g);
         int numberOfTracks = raceControlCenter.getNumberOfTracks();
         for (int i = 0; i < numberOfTracks; i++) {
@@ -160,7 +173,9 @@ public class RaceFieldGR extends JPanel {
         }
     }
 
-    private void prepareBuffer(BufferedImage bi, Graphics gbi, Graphics g) {
+    private void prepareBuffer(Graphics gbi, Graphics g) {
+        checkG(gbi);
+        checkG(g);
         gbi.setColor(this.getBackground());
         gbi.fillRect(0,0,getWidth(), getHeight());
         gbi.setColor(g.getColor());
@@ -169,10 +184,11 @@ public class RaceFieldGR extends JPanel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+        checkRaceControlCenter();
         //
         BufferedImage bi = new BufferedImage(getWidth(), getHeight(),BufferedImage.TYPE_INT_RGB);
         Graphics gbi = bi.getGraphics();
-        prepareBuffer(bi, gbi, g);
+        prepareBuffer(gbi, g);
         //
         drawField(gbi);
         Cockroach[] cockroaches = raceControlCenter.getCockroaches();
@@ -183,6 +199,25 @@ public class RaceFieldGR extends JPanel {
     }
 
     private int getFinishWidth(){
+        checkRaceField();
         return (raceField.getTrackWidth()/FINISH_CELLS_Y)*FINISH_CELLS_X;
+    }
+
+    private void checkG(Graphics g) {
+        if (g==null) {
+            throw new IllegalArgumentException("graphics is null");
+        }
+    }
+
+    private void checkRaceControlCenter() {
+        if (raceControlCenter==null) {
+            throw new ResourceNotInitialisedException("raceControlCenter is null");
+        }
+    }
+
+    private void checkRaceField() {
+        if (raceField==null) {
+            throw new ResourceNotInitialisedException("raceField is null");
+        }
     }
 }

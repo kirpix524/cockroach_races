@@ -51,6 +51,7 @@ public class RaceNode implements Comparable<RaceNode> {
     }
 
     public void setTime(long time) {
+        if (time<0) throw new IllegalArgumentException("time must be >0");
         this.cockroachTime = time;
     }
 
