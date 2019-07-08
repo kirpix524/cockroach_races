@@ -70,4 +70,8 @@ public class RaceNode implements Comparable<RaceNode> {
     public void setFinished() {
         finished = true;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

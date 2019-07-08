@@ -152,7 +152,11 @@ public class RaceControlCenter implements Thread.UncaughtExceptionHandler {
     public void renameCockroach(int id, String name) {
         checkCockroachID(id);
         checkCockroaches();
+        checkRaceJournal();
         cockroaches[id].setName(name);
+        if (raceJournal.getCurrentRace()!=null) {
+            raceJournal.getCurrentRace().renameCockroach(id, name);
+        }
     }
 
     public void kickCockroachAtCoordinates(int x, int y) {

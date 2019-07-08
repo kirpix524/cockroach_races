@@ -108,6 +108,11 @@ public class Race {
         return (id+1);
     }
 
+    synchronized public void renameCockroach(int cockroachID, String name) {
+        int i = getNodePositionByCockroachID(cockroachID);
+        if (i==-1) return;
+        races.get(i).setName(name);
+    }
 
     private void checkRaces() {
         if (races==null) {
