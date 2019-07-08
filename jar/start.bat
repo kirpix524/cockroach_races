@@ -1,0 +1,1 @@
+java -jar cockroach_races.jar 5
